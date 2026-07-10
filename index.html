@@ -1026,28 +1026,37 @@
     };
 
     function addPlayer() {
-      const count = state.players.length + 1;
-      const player = {
-        index: state.players.length,
-        name: `Player ${count}`,
-        roundScores: [],
-        overallScore: 0,
-        darts: []
-      };
-      state.players.push(player);
-      renderPlayers();
+      const idx = state.players.length;
+      const input = document.createElement('div');
+      input.className = 'input-row';
+      input.innerHTML = `
+        <input type="text" placeholder="Player ${idx + 1}" class="player-name-input" value="Player ${idx + 1}">
+        <button class="tiny-btn" onclick="removePlayer(${idx})">−</button>
+      `;
+      els.playerInputs.appendChild(input);
+      state.players.push({name: `Player ${idx + 1}`, roundScores: [], overallScore: 0, darts: []});
     }
 
-    function renderPlayers() {
-      els.playerInputs.innerHTML = state.players.map((p, i) => `
+    function removePlayer(idx) {
+      state.players.splice(idx, 1);
+      renderPlayerInputs();
+    }
+
+    function renderPlayerInputs() {
+      els.playerInputs.innerHTML = state.players.map((p, idx) => `
         <div class="input-row">
-          <input type="text" value="${escapeHtml(p.name)}" onchange="state.players[${i}].name = this.value; renderPlayers();" />
-          <button class="tiny-btn" onclick="state.players.splice(${i}, 1); renderPlayers();">✕</button>
+          <input type="text" placeholder="Player ${idx + 1}" class="player-name-input" value="${escapeHtml(p.name)}">
+          <button class="tiny-btn" onclick="removePlayer(${idx})">−</button>
         </div>
       `).join('');
     }
 
     function startGame() {
+      const inputs = document.querySelectorAll('.player-name-input');
+      state.players.forEach((p, i) => {
+        p.name = inputs[i].value || `Player ${i + 1}`;
+      });
+
       if (state.players.length < 2) {
         alert('Need at least 2 players!');
         return;
@@ -1083,8 +1092,8 @@
 
     function finishRound() {
       const housePlayerIdx = state.roundOrder[state.roundOrder.length - 1];
-      const houseBusted = calculateScore(state.players[housePlayerIdx].darts) > 21;
-      const houseScore = houseBusted ? 0 : calculateScore(state.players[housePlayerIdx].darts);
+      const houseScore = calculateScore(state.players[housePlayerIdx].darts);
+      const houseBusted = houseScore > 21;
 
       state.players.forEach((p, idx) => {
         const playerScore = calculateScore(p.darts);
@@ -1093,33 +1102,52 @@
         let pointsEarned = 0;
 
         if (idx === housePlayerIdx) {
-          // House logic
+          // House logic: award 3 pts if House has highest score (and didn't bust), 1 pt if ties
           if (houseBusted) {
-            result = 'lose'; // House busted
-          } else if (playerBusted) {
-            result = 'lose'; // House didn't bust but result is lose for house
-          } else if (playerScore > houseScore) {
-            result = 'lose'; // House loses
-          } else if (playerScore === houseScore) {
-            result = 'tie'; // Tie
-            pointsEarned = 1; // House gets 1 point for tie
+            result = 'lose';
           } else {
-            result = 'win'; // House wins
-            pointsEarned = 3; // House gets 3 points for winning
+            // Find the max score among all non-busted non-house players
+            let maxNonHouseScore = -1;
+            let anyNonHouseBeat = false;
+            
+            state.players.forEach((opponent, oppIdx) => {
+              if (oppIdx !== housePlayerIdx) {
+                const oppScore = calculateScore(opponent.darts);
+                const oppBusted = oppScore > 21;
+                if (!oppBusted) {
+                  if (oppScore > houseScore) {
+                    anyNonHouseBeat = true;
+                  }
+                  maxNonHouseScore = Math.max(maxNonHouseScore, oppScore);
+                }
+              }
+            });
+
+            if (anyNonHouseBeat) {
+              result = 'lose'; // House loses to at least one player
+            } else if (maxNonHouseScore === houseScore && maxNonHouseScore >= 0) {
+              result = 'tie';
+              pointsEarned = 1;
+            } else if (maxNonHouseScore < houseScore) {
+              result = 'win'; // House has highest score
+              pointsEarned = 3;
+            } else {
+              result = 'lose'; // All opponents busted or no valid scores
+            }
           }
         } else {
           // Non-House players
           if (playerBusted) {
             result = 'lose';
           } else if (houseBusted) {
-            result = 'win'; // Non-house player wins because house busted
-            pointsEarned = 3; // 3 pts for all non-bust when house busts
+            result = 'win';
+            pointsEarned = 3;
           } else if (playerScore > houseScore) {
-            result = 'win'; // Non-house player beats house
-            pointsEarned = 3; // 3 pts for beating house
+            result = 'win';
+            pointsEarned = 3;
           } else if (playerScore === houseScore) {
             result = 'tie';
-            pointsEarned = 1; // 1 pt for tie
+            pointsEarned = 1;
           } else {
             result = 'lose';
           }
@@ -1228,28 +1256,26 @@
       const baseName = base === null ? '—' : (base === LOCK_KEY_BULL ? 'Bull' : base === 'MISS' ? 'Miss' : base);
       els.previewBase.textContent = `Base: ${baseName}`;
       els.previewMult.textContent = `Mult: ${state.turnBuilder.selectedMultiplier}x`;
-      els.previewValue.textContent = `Value: ${base === null ? '—' : base === 'MISS' ? '0' : base === LOCK_KEY_BULL ? BULL_VALUE * state.turnBuilder.selectedMultiplier : base * state.turnBuilder.selectedMultiplier}`;
+      const value = base === null ? '—' : (base === LOCK_KEY_BULL ? BULL_VALUE : base === 'MISS' ? 0 : base) * state.turnBuilder.selectedMultiplier;
+      els.previewValue.textContent = `Value: ${value}`;
 
-      els.dartStageLabel.textContent = `Dart ${state.turnBuilder.darts.length + 1} of 3`;
+      const dartCount = state.turnBuilder.darts.length + 1;
+      els.dartStageLabel.textContent = `Dart ${dartCount} of 3`;
 
-      if (state.turnBuilder.darts.length > 0) {
-        els.dartHistory1.textContent = state.turnBuilder.darts[0] ? `${state.turnBuilder.darts[0].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[0].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[0].base}×${state.turnBuilder.darts[0].multiplier}` : '—';
-        els.dartHistory2.textContent = state.turnBuilder.darts[1] ? `${state.turnBuilder.darts[1].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[1].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[1].base}×${state.turnBuilder.darts[1].multiplier}` : '—';
-        els.dartHistory3.textContent = state.turnBuilder.darts[2] ? `${state.turnBuilder.darts[2].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[2].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[2].base}×${state.turnBuilder.darts[2].multiplier}` : '—';
-      } else {
-        els.dartHistory1.textContent = '—';
-        els.dartHistory2.textContent = '—';
-        els.dartHistory3.textContent = '—';
-      }
+      els.dartHistory1.textContent = state.turnBuilder.darts[0] ? `${state.turnBuilder.darts[0].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[0].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[0].base}×${state.turnBuilder.darts[0].multiplier}` : '—';
+      els.dartHistory2.textContent = state.turnBuilder.darts[1] ? `${state.turnBuilder.darts[1].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[1].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[1].base}×${state.turnBuilder.darts[1].multiplier}` : '—';
+      els.dartHistory3.textContent = state.turnBuilder.darts[2] ? `${state.turnBuilder.darts[2].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[2].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[2].base}×${state.turnBuilder.darts[2].multiplier}` : '—';
 
-      renderNumbersLock();
       renderScoreButtons();
+      renderMultiplierButtons();
+      renderLockedNumbers();
+      showNotice(`${escapeHtml(currentPlayer.name)} - Dart ${dartCount}/3`, 'success');
     }
 
-    function renderNumbersLock() {
-      els.numbersLock.innerHTML = Array.from(state.roundLockedNumbers).map(n =>
-        `<div class="lock-pill taken">${n === LOCK_KEY_BULL ? 'Bull' : n}</div>`
-      ).join('');
+    function renderMultiplierButtons() {
+      els.multiplierButtons.innerHTML = [1, 2, 3].map(m => `
+        <button class="mult-btn ${state.turnBuilder.selectedMultiplier === m ? 'selected' : ''}" onclick="selectMultiplier(${m})">${m}x</button>
+      `).join('');
     }
 
     function renderScoreButtons() {
@@ -1271,12 +1297,12 @@
         <button class="score-btn miss ${state.turnBuilder.selectedBase === 'MISS' ? 'selected' : ''}" onclick="selectBase('MISS')">Miss</button>
       `;
       els.scoreButtonsRow4.innerHTML += bullMiss;
+    }
 
-      els.multiplierButtons.innerHTML = `
-        <button class="mult-btn ${state.turnBuilder.selectedMultiplier === 1 ? 'selected' : ''}" onclick="selectMultiplier(1)">1×</button>
-        <button class="mult-btn ${state.turnBuilder.selectedMultiplier === 2 ? 'selected' : ''}" onclick="selectMultiplier(2)">2×</button>
-        <button class="mult-btn ${state.turnBuilder.selectedMultiplier === 3 ? 'selected' : ''}" onclick="selectMultiplier(3)">3×</button>
-      `;
+    function renderLockedNumbers() {
+      els.numbersLock.innerHTML = Array.from(state.roundLockedNumbers).map(n =>
+        `<div class="lock-pill taken">${n === LOCK_KEY_BULL ? 'Bull' : n}</div>`
+      ).join('');
     }
 
     function renderScoreboard() {
@@ -1335,16 +1361,31 @@
     // Event listeners
     els.addPlayerBtn.addEventListener('click', addPlayer);
     els.startGameBtn.addEventListener('click', startGame);
-    els.resetBtn.addEventListener('click', () => window.location.reload());
+    els.resetBtn.addEventListener('click', () => {
+      state.players = [];
+      state.started = false;
+      state.round = 0;
+      state.currentTurnIndex = 0;
+      state.roundOrder = [];
+      state.logs = [];
+      els.playerInputs.innerHTML = '';
+      els.scoreboardBody.innerHTML = '';
+      els.logList.innerHTML = '';
+      els.finalPanel.style.display = 'none';
+      els.topStatus.textContent = 'Set up players to begin';
+    });
     els.lockDartBtn.addEventListener('click', lockDart);
-    els.submitTurnBtn.addEventListener('click', submitTurn);
     els.undoDartBtn.addEventListener('click', undoDart);
     els.clearTurnBtn.addEventListener('click', clearTurn);
+    els.submitTurnBtn.addEventListener('click', submitTurn);
 
-    // Initialize
-    addPlayer();
-    addPlayer();
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+    document.addEventListener('DOMContentLoaded', () => {
+      addPlayer();
+      addPlayer();
+      setTimeout(() => {
+        document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+      }, 100);
+    });
   </script>
 </body>
 </html>
