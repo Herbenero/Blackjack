@@ -6,38 +6,37 @@
   <title>Blackjack Darts</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0f0e0a;
-      --bg-2:#17150f;
-      --panel:#1e1b13cc;
-      --panel-solid:#201d15;
-      --ink:#f5edd7;
-      --muted:#b9ad8d;
+      --bg:#0d0b08;
+      --bg2:#17130d;
+      --panel:#1b1711cc;
+      --panel-solid:#201b14;
+      --ink:#f6eed8;
+      --muted:#baa98a;
       --gold:#f2c14e;
-      --gold-deep:#bf8b1a;
-      --burnt:#8f4f1d;
-      --red:#d84a3a;
-      --green:#6fcf97;
-      --line:rgba(242,193,78,.18);
-      --shadow:0 18px 60px rgba(0,0,0,.45);
+      --gold2:#d89b24;
+      --red:#dd4e3d;
+      --green:#6fcb93;
+      --line:rgba(242,193,78,.16);
+      --shadow:0 20px 60px rgba(0,0,0,.42);
       --radius:24px;
       --radius-sm:16px;
-      --max:1280px;
+      --max:1320px;
     }
 
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
     body{
       margin:0;
-      font-family:'Inter', sans-serif;
+      font-family:'Inter',sans-serif;
       color:var(--ink);
       background:
         radial-gradient(circle at 15% 10%, rgba(242,193,78,.12), transparent 22%),
-        radial-gradient(circle at 85% 12%, rgba(216,74,58,.10), transparent 18%),
-        radial-gradient(circle at 50% 100%, rgba(191,139,26,.12), transparent 30%),
-        linear-gradient(180deg, #0b0a07 0%, #11100c 50%, #0b0a07 100%);
+        radial-gradient(circle at 85% 10%, rgba(221,78,61,.10), transparent 20%),
+        radial-gradient(circle at 50% 100%, rgba(216,155,36,.12), transparent 30%),
+        linear-gradient(180deg,#0a0907 0%, #110f0b 48%, #0a0907 100%);
       min-height:100vh;
       overflow-x:hidden;
     }
@@ -47,16 +46,16 @@
       position:fixed;
       inset:0;
       pointer-events:none;
-      opacity:.07;
+      opacity:.06;
       background-image:
-        linear-gradient(rgba(255,255,255,.18) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px);
+        linear-gradient(rgba(255,255,255,.16) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px);
       background-size:28px 28px;
-      mask-image:linear-gradient(to bottom, rgba(0,0,0,.45), transparent 90%);
+      mask-image:linear-gradient(to bottom, rgba(0,0,0,.45), transparent 88%);
     }
 
     .shell{
-      width:min(var(--max), calc(100% - 2rem));
+      width:min(var(--max), calc(100% - 1.2rem));
       margin-inline:auto;
     }
 
@@ -65,12 +64,12 @@
       justify-content:space-between;
       align-items:center;
       gap:1rem;
-      padding:1rem 0 .5rem;
+      padding:1rem 0 .6rem;
       position:sticky;
       top:0;
-      z-index:20;
+      z-index:30;
       backdrop-filter:blur(14px);
-      background:linear-gradient(180deg, rgba(11,10,7,.85), rgba(11,10,7,.35), transparent);
+      background:linear-gradient(180deg, rgba(10,9,7,.88), rgba(10,9,7,.42), transparent);
     }
 
     .brand{
@@ -80,36 +79,32 @@
     }
 
     .brand-mark{
-      width:52px;
+      width:54px;
       aspect-ratio:1;
       border-radius:18px;
       background:
-        radial-gradient(circle at 30% 30%, #ffe6a3 0 6%, transparent 7%),
-        radial-gradient(circle at 50% 50%, #f2c14e 0 22%, #8f4f1d 23% 33%, #f2c14e 34% 50%, #2b2416 51% 100%);
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.12),
-        0 8px 24px rgba(242,193,78,.22);
+        radial-gradient(circle at 50% 50%, #f2c14e 0 20%, #8c531f 21% 32%, #f2c14e 33% 50%, #241c11 51% 100%);
       position:relative;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 24px rgba(242,193,78,.2);
     }
 
     .brand-mark::after{
       content:"";
       position:absolute;
-      width:22px;
+      width:24px;
       height:2px;
-      background:#e8dcc0;
+      background:#f2e4c0;
+      border-radius:999px;
       top:50%;
       left:50%;
       transform:translate(-50%,-50%) rotate(-35deg);
-      border-radius:99px;
-      box-shadow:0 0 0 1px rgba(255,255,255,.06);
     }
 
     .brand h1{
       margin:0;
-      font-family:'Bebas Neue', cursive;
+      font-family:'Bebas Neue',cursive;
       letter-spacing:.06em;
-      font-size:clamp(2rem, 3.3vw, 3.5rem);
+      font-size:clamp(2rem,3vw,3.5rem);
       line-height:.9;
       color:var(--gold);
     }
@@ -118,8 +113,8 @@
       margin:0;
       color:var(--muted);
       font-size:.9rem;
-      letter-spacing:.08em;
       text-transform:uppercase;
+      letter-spacing:.12em;
     }
 
     .status-chip{
@@ -128,23 +123,21 @@
       border-radius:999px;
       padding:.85rem 1rem;
       color:var(--ink);
-      font-weight:700;
-      letter-spacing:.04em;
+      font-weight:800;
       text-transform:uppercase;
-      font-size:.85rem;
-      white-space:nowrap;
+      letter-spacing:.05em;
+      font-size:.82rem;
     }
 
     .hero{
       display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:1.2rem;
-      padding:1rem 0 1.5rem;
-      align-items:stretch;
+      grid-template-columns:1.05fr .95fr;
+      gap:1rem;
+      padding:.8rem 0 1rem;
     }
 
     .panel{
-      background:linear-gradient(180deg, rgba(32,29,21,.86), rgba(20,18,13,.86));
+      background:linear-gradient(180deg, rgba(31,27,20,.9), rgba(18,16,12,.88));
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
@@ -152,25 +145,24 @@
     }
 
     .intro{
-      padding:clamp(1.3rem, 2vw, 2rem);
+      padding:clamp(1.2rem,2vw,2rem);
       position:relative;
       overflow:hidden;
-      min-height:320px;
+      min-height:300px;
     }
 
     .intro::before{
       content:"";
       position:absolute;
       right:-10%;
-      top:-12%;
-      width:300px;
-      height:300px;
-      background:
-        radial-gradient(circle, rgba(242,193,78,.22) 0 20%, transparent 58%),
-        conic-gradient(from 40deg, rgba(242,193,78,.18), rgba(216,74,58,.05), transparent 55%, rgba(242,193,78,.12));
-      filter:blur(8px);
-      opacity:.9;
+      top:-10%;
+      width:320px;
+      height:320px;
       border-radius:50%;
+      background:
+        radial-gradient(circle, rgba(242,193,78,.22) 0 18%, transparent 56%),
+        conic-gradient(from 30deg, rgba(242,193,78,.18), rgba(221,78,61,.06), transparent 60%, rgba(242,193,78,.14));
+      filter:blur(8px);
     }
 
     .eyebrow{
@@ -188,49 +180,47 @@
       content:"";
       width:30px;
       height:1px;
-      background:linear-gradient(90deg, var(--gold), transparent);
+      background:linear-gradient(90deg,var(--gold),transparent);
     }
 
     .intro h2{
       margin:.7rem 0 .8rem;
-      font-family:'Bebas Neue', cursive;
+      font-family:'Bebas Neue',cursive;
       line-height:.92;
       letter-spacing:.03em;
-      font-size:clamp(3.2rem, 7vw, 6.6rem);
-      max-width:9ch;
+      font-size:clamp(3rem,6vw,6.1rem);
+      max-width:10ch;
     }
 
     .intro p{
-      max-width:60ch;
-      color:#e7dcc1;
-      font-size:1rem;
+      max-width:62ch;
+      color:#e8ddc3;
       line-height:1.7;
       margin:0;
     }
 
     .rules-strip{
-      margin-top:1.4rem;
+      margin-top:1.25rem;
       display:flex;
+      gap:.65rem;
       flex-wrap:wrap;
-      gap:.7rem;
     }
 
     .rule-pill{
       border:1px solid rgba(255,255,255,.08);
       background:rgba(255,255,255,.03);
       color:var(--ink);
-      padding:.65rem .85rem;
       border-radius:999px;
-      font-size:.84rem;
-      font-weight:700;
+      padding:.65rem .85rem;
+      font-size:.82rem;
+      font-weight:800;
     }
 
     .setup{
-      padding:1.25rem;
+      padding:1.15rem;
       display:flex;
       flex-direction:column;
       gap:1rem;
-      justify-content:space-between;
     }
 
     .setup-head h3,
@@ -238,9 +228,9 @@
     .turn-panel h3,
     .final-panel h3{
       margin:0;
-      font-family:'Bebas Neue', cursive;
+      font-family:'Bebas Neue',cursive;
       letter-spacing:.05em;
-      font-size:clamp(1.8rem, 3vw, 2.5rem);
+      font-size:clamp(1.8rem,3vw,2.5rem);
     }
 
     .setup-head p,
@@ -266,87 +256,86 @@
       animation:fadeUp .45s ease both;
     }
 
-    input[type="text"], input[type="number"]{
+    input[type="text"]{
       width:100%;
       border:none;
       outline:none;
       color:var(--ink);
-      background:#0f0e0b;
+      background:#0f0d09;
       border:1px solid rgba(255,255,255,.08);
       border-radius:16px;
-      padding:1rem 1rem;
+      padding:1rem;
       font:inherit;
       transition:.2s ease;
     }
 
     input:focus{
-      border-color:rgba(242,193,78,.55);
+      border-color:rgba(242,193,78,.52);
       box-shadow:0 0 0 4px rgba(242,193,78,.08);
       transform:translateY(-1px);
     }
 
-    .tiny-btn, .btn{
+    .tiny-btn,.btn,.score-btn,.mult-btn{
       border:none;
       cursor:pointer;
       font:inherit;
-      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease;
+      transition:transform .16s ease, background .16s ease, box-shadow .16s ease, opacity .16s ease;
     }
 
     .tiny-btn{
       width:46px;
       height:46px;
       border-radius:14px;
-      background:rgba(216,74,58,.12);
-      color:#ffb8b0;
-      border:1px solid rgba(216,74,58,.28);
-      font-weight:800;
+      background:rgba(221,78,61,.12);
+      border:1px solid rgba(221,78,61,.28);
+      color:#ffc2ba;
+      font-weight:900;
     }
 
-    .tiny-btn:hover{ transform:translateY(-2px) scale(1.03) }
-    .tiny-btn:active{ transform:translateY(0) scale(.98) }
+    .tiny-btn:hover,.btn:hover,.score-btn:hover,.mult-btn:hover{ transform:translateY(-2px) }
+    .tiny-btn:active,.btn:active,.score-btn:active,.mult-btn:active{ transform:translateY(0) scale(.98) }
 
-    .setup-actions{
+    .setup-actions,.turn-actions{
       display:flex;
-      flex-wrap:wrap;
       gap:.75rem;
+      flex-wrap:wrap;
     }
 
     .btn{
       border-radius:18px;
-      padding:1rem 1.2rem;
-      font-weight:800;
+      padding:1rem 1.15rem;
+      font-weight:900;
       letter-spacing:.04em;
       text-transform:uppercase;
     }
 
     .btn-primary{
-      background:linear-gradient(135deg, var(--gold) 0%, #e6a52b 100%);
-      color:#1c1408;
-      box-shadow:0 14px 30px rgba(242,193,78,.24);
+      background:linear-gradient(135deg,var(--gold) 0%, #e4a52b 100%);
+      color:#1b1307;
+      box-shadow:0 14px 30px rgba(242,193,78,.22);
     }
 
-    .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 18px 34px rgba(242,193,78,.3) }
     .btn-secondary{
       background:rgba(255,255,255,.04);
       color:var(--ink);
       border:1px solid rgba(255,255,255,.1);
     }
-    .btn-secondary:hover{ transform:translateY(-2px); background:rgba(255,255,255,.07) }
+
     .btn-danger{
-      background:rgba(216,74,58,.12);
-      color:#ffc5bf;
-      border:1px solid rgba(216,74,58,.25);
+      background:rgba(221,78,61,.12);
+      color:#ffc7c0;
+      border:1px solid rgba(221,78,61,.25);
     }
 
     .main-grid{
       display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:1.2rem;
+      grid-template-columns:1.18fr .82fr;
+      gap:1rem;
       padding-bottom:2rem;
     }
 
     .scoreboard{
-      padding:1.2rem;
+      padding:1.1rem;
     }
 
     .section-head{
@@ -359,9 +348,8 @@
 
     .round-banner{
       display:flex;
-      gap:.8rem;
+      gap:.75rem;
       flex-wrap:wrap;
-      align-items:center;
     }
 
     .round-tag{
@@ -370,10 +358,10 @@
       background:rgba(242,193,78,.1);
       border:1px solid rgba(242,193,78,.24);
       color:var(--gold);
-      font-weight:800;
+      font-weight:900;
       text-transform:uppercase;
       letter-spacing:.06em;
-      font-size:.78rem;
+      font-size:.76rem;
     }
 
     .board-wrap{
@@ -386,12 +374,12 @@
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:760px;
+      min-width:850px;
     }
 
     thead th{
       text-align:left;
-      font-size:.78rem;
+      font-size:.76rem;
       text-transform:uppercase;
       letter-spacing:.12em;
       color:var(--muted);
@@ -400,7 +388,6 @@
       background:rgba(0,0,0,.12);
       position:sticky;
       top:0;
-      backdrop-filter:blur(8px);
       z-index:1;
     }
 
@@ -410,15 +397,13 @@
       vertical-align:middle;
     }
 
-    tbody tr:hover{
-      background:rgba(255,255,255,.025);
-    }
+    tbody tr:hover{ background:rgba(255,255,255,.025) }
 
     .player-cell{
       display:flex;
       align-items:center;
       gap:.8rem;
-      font-weight:700;
+      font-weight:800;
     }
 
     .avatar{
@@ -427,10 +412,10 @@
       border-radius:12px;
       display:grid;
       place-items:center;
-      font-weight:800;
       color:#1a1208;
-      background:linear-gradient(135deg, #f6d57a, #d19320);
+      background:linear-gradient(135deg,#f8d97c,#cf8f1d);
       box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+      font-weight:900;
       flex:0 0 auto;
     }
 
@@ -444,40 +429,35 @@
       font-size:.7rem;
       text-transform:uppercase;
       letter-spacing:.08em;
-      font-weight:800;
-    }
-
-    .dart-list{
-      display:flex;
-      gap:.5rem;
-      flex-wrap:wrap;
+      font-weight:900;
     }
 
     .dart-pill{
-      min-width:48px;
-      text-align:center;
-      padding:.45rem .6rem;
+      display:inline-flex;
+      min-width:70px;
+      justify-content:center;
+      padding:.45rem .65rem;
       border-radius:999px;
       background:#12100b;
       border:1px solid rgba(255,255,255,.08);
-      font-weight:800;
+      font-weight:900;
     }
 
     .dart-pill.bust{
-      background:rgba(216,74,58,.12);
-      color:#ffb4aa;
-      border-color:rgba(216,74,58,.28);
+      background:rgba(221,78,61,.14);
+      color:#ffb9af;
+      border-color:rgba(221,78,61,.28);
     }
 
     .round-score{
       font-weight:900;
-      font-size:1.05rem;
+      font-size:1.08rem;
     }
 
     .overall{
       color:var(--gold);
       font-weight:900;
-      font-size:1.15rem;
+      font-size:1.16rem;
     }
 
     .result-tag{
@@ -485,111 +465,221 @@
       align-items:center;
       padding:.45rem .7rem;
       border-radius:999px;
-      font-size:.76rem;
+      font-size:.75rem;
       font-weight:900;
       letter-spacing:.08em;
       text-transform:uppercase;
       border:1px solid transparent;
     }
 
-    .win{ background:rgba(111,207,151,.12); color:#bff0cf; border-color:rgba(111,207,151,.28); }
-    .lose{ background:rgba(216,74,58,.12); color:#ffc0b8; border-color:rgba(216,74,58,.28); }
-    .tie{ background:rgba(242,193,78,.12); color:#ffe19a; border-color:rgba(242,193,78,.28); }
+    .win{ background:rgba(111,203,147,.12); color:#c7f2d6; border-color:rgba(111,203,147,.24); }
+    .lose{ background:rgba(221,78,61,.12); color:#ffc2ba; border-color:rgba(221,78,61,.28); }
+    .tie{ background:rgba(242,193,78,.12); color:#ffe6a3; border-color:rgba(242,193,78,.28); }
     .pending{ background:rgba(255,255,255,.05); color:var(--muted); border-color:rgba(255,255,255,.08); }
 
     .side-stack{
       display:flex;
       flex-direction:column;
-      gap:1.2rem;
+      gap:1rem;
     }
 
-    .turn-panel, .final-panel, .log-panel{
-      padding:1.2rem;
+    .turn-panel,.log-panel,.final-panel{
+      padding:1.1rem;
     }
 
     .turn-meta{
       display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:.75rem;
-      margin:1rem 0 1.1rem;
+      grid-template-columns:repeat(4,1fr);
+      gap:.7rem;
+      margin:1rem 0;
     }
 
     .meta-box{
       border:1px solid rgba(255,255,255,.08);
       background:rgba(255,255,255,.03);
       border-radius:18px;
-      padding:.95rem;
+      padding:.9rem;
     }
 
     .meta-box span{
       display:block;
       color:var(--muted);
-      font-size:.76rem;
+      font-size:.74rem;
       text-transform:uppercase;
       letter-spacing:.12em;
       margin-bottom:.35rem;
-      font-weight:700;
+      font-weight:800;
     }
 
     .meta-box strong{
-      font-size:1.15rem;
-      line-height:1.1;
+      font-size:1.08rem;
+      line-height:1.15;
     }
 
-    .throw-form{
-      display:grid;
+    .dart-stage{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      border-radius:20px;
+      padding:1rem;
+      margin-bottom:1rem;
+    }
+
+    .dart-stage-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
       gap:1rem;
+      margin-bottom:.9rem;
+      flex-wrap:wrap;
     }
 
-    .throw-grid{
+    .dart-index{
+      font-family:'Bebas Neue',cursive;
+      font-size:1.8rem;
+      letter-spacing:.05em;
+    }
+
+    .selection-preview{
+      display:flex;
+      gap:.55rem;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .preview-chip{
+      padding:.45rem .7rem;
+      border-radius:999px;
+      background:#100e0a;
+      border:1px solid rgba(255,255,255,.08);
+      font-weight:900;
+      min-width:72px;
+      text-align:center;
+    }
+
+    .preview-chip.active{
+      color:var(--gold);
+      border-color:rgba(242,193,78,.3);
+      background:rgba(242,193,78,.08);
+    }
+
+    .button-bank{
       display:grid;
-      grid-template-columns:repeat(3, 1fr);
       gap:.8rem;
     }
 
-    .throw-grid label{
-      display:flex;
-      flex-direction:column;
-      gap:.45rem;
-      font-weight:700;
-      color:#efe5cc;
-      font-size:.92rem;
+    .button-row{
+      display:grid;
+      grid-template-columns:repeat(6,1fr);
+      gap:.55rem;
+    }
+
+    .score-btn,.mult-btn{
+      border-radius:14px;
+      min-height:52px;
+      font-weight:900;
+      color:var(--ink);
+      border:1px solid rgba(255,255,255,.08);
+      background:#12100b;
+    }
+
+    .score-btn:hover,.mult-btn:hover{
+      background:#18150f;
+      box-shadow:0 10px 20px rgba(0,0,0,.18);
+    }
+
+    .score-btn.selected,.mult-btn.selected{
+      background:rgba(242,193,78,.12);
+      color:var(--gold);
+      border-color:rgba(242,193,78,.3);
+    }
+
+    .score-btn.special{
+      background:rgba(255,255,255,.04);
+    }
+
+    .score-btn.miss{
+      background:rgba(221,78,61,.10);
+      color:#ffc2ba;
+      border-color:rgba(221,78,61,.2);
     }
 
     .helper{
       color:var(--muted);
       font-size:.84rem;
       line-height:1.6;
-      margin-top:.2rem;
+    }
+
+    .dart-history{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:.7rem;
+      margin:1rem 0;
+    }
+
+    .history-box{
+      border-radius:16px;
+      padding:.9rem;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .history-box span{
+      display:block;
+      color:var(--muted);
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:.25rem;
+      font-weight:800;
+    }
+
+    .history-box strong{
+      font-size:1.05rem;
     }
 
     .notice{
-      margin-top:.8rem;
-      min-height:48px;
-      padding:.85rem 1rem;
+      min-height:52px;
+      padding:.9rem 1rem;
       border-radius:16px;
       border:1px solid rgba(255,255,255,.08);
       background:rgba(255,255,255,.03);
       color:#f0e5ca;
       line-height:1.6;
+      margin-top:.8rem;
     }
 
     .notice.error{
-      background:rgba(216,74,58,.12);
-      border-color:rgba(216,74,58,.28);
-      color:#ffc0b8;
+      background:rgba(221,78,61,.12);
+      border-color:rgba(221,78,61,.28);
+      color:#ffc2ba;
     }
 
     .notice.success{
-      background:rgba(111,207,151,.12);
-      border-color:rgba(111,207,151,.24);
-      color:#c9f3d9;
+      background:rgba(111,203,147,.12);
+      border-color:rgba(111,203,147,.24);
+      color:#caf0d8;
+    }
+
+    .notice.bust-flash{
+      animation:bustFlash .8s ease 2;
+      background:rgba(221,78,61,.22);
+      border-color:rgba(221,78,61,.48);
+      color:#fff2ef;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    @keyframes bustFlash{
+      0%,100%{ transform:scale(1); box-shadow:0 0 0 rgba(221,78,61,0) }
+      25%{ transform:scale(1.02); box-shadow:0 0 0 6px rgba(221,78,61,.08) }
+      50%{ transform:scale(1); box-shadow:0 0 0 12px rgba(221,78,61,.04) }
     }
 
     .numbers-lock{
       display:flex;
       flex-wrap:wrap;
-      gap:.55rem;
+      gap:.5rem;
       margin-top:1rem;
     }
 
@@ -599,23 +689,22 @@
       border:1px solid rgba(255,255,255,.08);
       background:#12100b;
       color:var(--muted);
-      font-weight:800;
-      font-size:.78rem;
+      font-weight:900;
+      font-size:.76rem;
     }
 
     .lock-pill.taken{
       background:rgba(242,193,78,.12);
-      border-color:rgba(242,193,78,.25);
       color:var(--gold);
+      border-color:rgba(242,193,78,.28);
     }
 
     .log-list{
       display:flex;
       flex-direction:column;
       gap:.75rem;
-      max-height:340px;
+      max-height:330px;
       overflow:auto;
-      padding-right:.2rem;
     }
 
     .log-item{
@@ -627,13 +716,9 @@
       line-height:1.55;
     }
 
-    .log-item strong{
-      color:var(--gold);
-    }
+    .log-item strong{ color:var(--gold) }
 
-    .final-panel{
-      display:none;
-    }
+    .final-panel{ display:none }
 
     .final-list{
       display:grid;
@@ -646,21 +731,17 @@
       grid-template-columns:1fr auto;
       gap:1rem;
       align-items:center;
-      padding:1rem 1rem;
+      padding:1rem;
       border-radius:18px;
       background:rgba(255,255,255,.03);
       border:1px solid rgba(255,255,255,.08);
     }
 
-    .final-row strong{
-      font-size:1.1rem;
-    }
-
     .final-score{
-      font-family:'Bebas Neue', cursive;
+      font-family:'Bebas Neue',cursive;
       font-size:2rem;
       color:var(--gold);
-      letter-spacing:.04em;
+      letter-spacing:.05em;
     }
 
     .reveal{
@@ -675,21 +756,24 @@
     }
 
     @keyframes fadeUp{
-      from{opacity:0; transform:translateY(12px)}
+      from{opacity:0; transform:translateY(10px)}
       to{opacity:1; transform:translateY(0)}
     }
 
-    @media (max-width: 1080px){
-      .hero, .main-grid{ grid-template-columns:1fr; }
+    @media (max-width: 1120px){
+      .hero,.main-grid{ grid-template-columns:1fr; }
     }
 
-    @media (max-width: 700px){
-      .topbar{ align-items:flex-start; flex-direction:column; }
-      .turn-meta, .throw-grid{ grid-template-columns:1fr; }
-      .section-head{ flex-direction:column; align-items:flex-start; }
+    @media (max-width: 780px){
+      .topbar{ flex-direction:column; align-items:flex-start; }
       .input-row{ grid-template-columns:1fr; }
-      .tiny-btn{ width:100%; }
-      .intro h2{ max-width:unset; }
+      .turn-meta,.dart-history{ grid-template-columns:1fr 1fr; }
+      .button-row{ grid-template-columns:repeat(4,1fr); }
+      .section-head{ flex-direction:column; align-items:flex-start; }
+    }
+
+    @media (max-width: 560px){
+      .turn-meta,.dart-history,.button-row{ grid-template-columns:1fr 1fr; }
     }
   </style>
 </head>
@@ -700,7 +784,7 @@
         <div class="brand-mark" aria-hidden="true"></div>
         <div>
           <h1>Blackjack</h1>
-          <p>Darts round tracker · 8 rounds · House rules built in</p>
+          <p>Darts webapp · button scoring · House logic</p>
         </div>
       </div>
       <div class="status-chip" id="topStatus">Set up players to begin</div>
@@ -708,24 +792,25 @@
 
     <section class="hero">
       <article class="panel intro reveal">
-        <div class="eyebrow">Darts scoring webapp</div>
-        <h2>Beat 21. Don’t bust. Outsmart the House.</h2>
+        <div class="eyebrow">Blackjack darts</div>
+        <h2>Tap scores. Apply doubles or trebles. Beat the House.</h2>
         <p>
-          Enter multiple player names, track every dart, lock out hit numbers for opponents in the same round,
-          alternate who throws first, and automatically score the House after each round. Built for quick play and clear scorekeeping.
+          Every dart starts as a single. Use the number buttons from 1–20 plus Bull, or choose Miss.
+          If 2x or 3x is selected, it multiplies the chosen number for that dart. The game lasts 8 rounds,
+          throw order rotates, and the final thrower in each round is the House.
         </p>
         <div class="rules-strip">
-          <div class="rule-pill">8 rounds total</div>
-          <div class="rule-pill">Bust ends turn immediately</div>
-          <div class="rule-pill">House throws last each round</div>
-          <div class="rule-pill">3 pts win · 1 pt tie with House</div>
+          <div class="rule-pill">Single by default</div>
+          <div class="rule-pill">2x / 3x as multipliers</div>
+          <div class="rule-pill">Bust if round total exceeds 21</div>
+          <div class="rule-pill">No overall points unless House also busts</div>
         </div>
       </article>
 
       <aside class="panel setup reveal">
         <div class="setup-head">
           <h3>Players</h3>
-          <p>Add at least 2 players. Throw order rotates each round, and the last thrower becomes the House.</p>
+          <p>Add at least 2 players. First throw rotates every round, and the last thrower is the House.</p>
         </div>
 
         <div class="player-inputs" id="playerInputs"></div>
@@ -743,7 +828,7 @@
         <div class="section-head">
           <div>
             <h3>Scoreboard</h3>
-            <p>Each row shows dart-by-dart scoring, round total, and overall game points.</p>
+            <p>Dart values, round score, and overall game score.</p>
           </div>
           <div class="round-banner">
             <div class="round-tag" id="roundDisplay">Round 0 / 8</div>
@@ -773,7 +858,7 @@
         <section class="panel turn-panel reveal">
           <div>
             <h3>Current Turn</h3>
-            <p>Enter up to 3 dart scores. Valid scores are 0–20. Once a number is hit, opponents cannot hit that same number in the round.</p>
+            <p>Build each dart using buttons. Pick a number or Bull, optionally apply 2x or 3x, then lock the dart.</p>
           </div>
 
           <div class="turn-meta">
@@ -789,33 +874,60 @@
               <span>Round</span>
               <strong id="currentRoundLabel">—</strong>
             </div>
+            <div class="meta-box">
+              <span>Running Total</span>
+              <strong id="runningTotalLabel">0</strong>
+            </div>
           </div>
 
-          <form class="throw-form" id="throwForm">
-            <div class="throw-grid">
-              <label>
-                Dart 1
-                <input type="number" id="dart1" min="0" max="20" inputmode="numeric" placeholder="0-20" />
-              </label>
-              <label>
-                Dart 2
-                <input type="number" id="dart2" min="0" max="20" inputmode="numeric" placeholder="0-20" />
-              </label>
-              <label>
-                Dart 3
-                <input type="number" id="dart3" min="0" max="20" inputmode="numeric" placeholder="0-20" />
-              </label>
+          <div class="dart-stage">
+            <div class="dart-stage-head">
+              <div class="dart-index" id="dartStageLabel">Dart 1 of 3</div>
+              <div class="selection-preview">
+                <div class="preview-chip" id="previewBase">Base: —</div>
+                <div class="preview-chip" id="previewMult">Mult: 1x</div>
+                <div class="preview-chip active" id="previewValue">Value: —</div>
+              </div>
+            </div>
+
+            <div class="button-bank">
+              <div class="helper">Multiplier</div>
+              <div class="button-row" id="multiplierButtons"></div>
+
+              <div class="helper">Score selection</div>
+              <div class="button-row" id="scoreButtonsRow1"></div>
+              <div class="button-row" id="scoreButtonsRow2"></div>
+              <div class="button-row" id="scoreButtonsRow3"></div>
+              <div class="button-row" id="scoreButtonsRow4"></div>
+            </div>
+
+            <div class="turn-actions" style="margin-top:1rem;">
+              <button class="btn btn-primary" id="lockDartBtn" type="button">Lock Dart</button>
+              <button class="btn btn-secondary" id="undoDartBtn" type="button">Undo Last Dart</button>
+              <button class="btn btn-danger" id="clearTurnBtn" type="button">Clear Turn</button>
+              <button class="btn btn-secondary" id="submitTurnBtn" type="button">Submit Turn</button>
+            </div>
+
+            <div class="dart-history">
+              <div class="history-box">
+                <span>Dart 1</span>
+                <strong id="dartHistory1">—</strong>
+              </div>
+              <div class="history-box">
+                <span>Dart 2</span>
+                <strong id="dartHistory2">—</strong>
+              </div>
+              <div class="history-box">
+                <span>Dart 3</span>
+                <strong id="dartHistory3">—</strong>
+              </div>
             </div>
 
             <div class="helper">
-              Leave later darts blank if the player busts or chooses not to throw further. If total exceeds 21 after dart 1 or 2, this app marks <strong>BUST</strong> and ends the turn.
+              Number lock rule: if a player hits a base number in the round, opponents cannot hit that same base number in the same round.
+              Bull counts as its own locked value. Miss does not lock anything.
             </div>
-
-            <div class="setup-actions">
-              <button class="btn btn-primary" type="submit" id="submitTurnBtn">Submit Turn</button>
-              <button class="btn btn-secondary" type="button" id="skipTurnBtn">Score 0 Turn</button>
-            </div>
-          </form>
+          </div>
 
           <div class="notice" id="notice">Game not started yet.</div>
 
@@ -829,7 +941,7 @@
           <div class="section-head" style="margin-bottom:.9rem;">
             <div>
               <h3>Round Log</h3>
-              <p>Recent round outcomes and House decisions.</p>
+              <p>House outcomes, busts, wins, and ties.</p>
             </div>
           </div>
           <div class="log-list" id="logList"></div>
@@ -848,6 +960,8 @@
 
   <script>
     const MAX_ROUNDS = 8;
+    const BULL_VALUE = 25;
+    const LOCK_KEY_BULL = 'BULL';
 
     const state = {
       players: [],
@@ -856,7 +970,12 @@
       currentTurnIndex: 0,
       roundOrder: [],
       roundLockedNumbers: new Set(),
-      logs: []
+      logs: [],
+      turnBuilder: {
+        darts: [],
+        selectedBase: null,
+        selectedMultiplier: 1
+      }
     };
 
     const els = {
@@ -870,29 +989,39 @@
       currentPlayerLabel: document.getElementById('currentPlayerLabel'),
       currentRoleLabel: document.getElementById('currentRoleLabel'),
       currentRoundLabel: document.getElementById('currentRoundLabel'),
-      throwForm: document.getElementById('throwForm'),
-      dart1: document.getElementById('dart1'),
-      dart2: document.getElementById('dart2'),
-      dart3: document.getElementById('dart3'),
+      runningTotalLabel: document.getElementById('runningTotalLabel'),
       notice: document.getElementById('notice'),
       numbersLock: document.getElementById('numbersLock'),
       logList: document.getElementById('logList'),
       topStatus: document.getElementById('topStatus'),
       finalPanel: document.getElementById('finalPanel'),
       finalList: document.getElementById('finalList'),
-      skipTurnBtn: document.getElementById('skipTurnBtn'),
-      submitTurnBtn: document.getElementById('submitTurnBtn')
+      multiplierButtons: document.getElementById('multiplierButtons'),
+      scoreButtonsRow1: document.getElementById('scoreButtonsRow1'),
+      scoreButtonsRow2: document.getElementById('scoreButtonsRow2'),
+      scoreButtonsRow3: document.getElementById('scoreButtonsRow3'),
+      scoreButtonsRow4: document.getElementById('scoreButtonsRow4'),
+      lockDartBtn: document.getElementById('lockDartBtn'),
+      undoDartBtn: document.getElementById('undoDartBtn'),
+      clearTurnBtn: document.getElementById('clearTurnBtn'),
+      submitTurnBtn: document.getElementById('submitTurnBtn'),
+      previewBase: document.getElementById('previewBase'),
+      previewMult: document.getElementById('previewMult'),
+      previewValue: document.getElementById('previewValue'),
+      dartStageLabel: document.getElementById('dartStageLabel'),
+      dartHistory1: document.getElementById('dartHistory1'),
+      dartHistory2: document.getElementById('dartHistory2'),
+      dartHistory3: document.getElementById('dartHistory3')
     };
 
     function createPlayerInput(value = '') {
       const row = document.createElement('div');
       row.className = 'input-row';
       row.innerHTML = `
-        <input type="text" maxlength="24" placeholder="Player name" value="${value}" />
+        <input type="text" maxlength="24" placeholder="Player name" value="${escapeHtml(value)}" />
         <button class="tiny-btn" type="button" aria-label="Remove player">✕</button>
       `;
-      const removeBtn = row.querySelector('button');
-      removeBtn.addEventListener('click', () => {
+      row.querySelector('button').addEventListener('click', () => {
         if (els.playerInputs.children.length > 2) {
           row.remove();
         } else {
@@ -913,6 +1042,47 @@
       return [...els.playerInputs.querySelectorAll('input')]
         .map(i => i.value.trim())
         .filter(Boolean);
+    }
+
+    function buildControlButtons() {
+      els.multiplierButtons.innerHTML = [1,2,3].map(mult => `
+        <button class="mult-btn ${mult === 1 ? 'selected' : ''}" type="button" data-mult="${mult}">
+          ${mult}x
+        </button>
+      `).join('');
+
+      const scoreSets = [
+        [1,2,3,4,5,6],
+        [7,8,9,10,11,12],
+        [13,14,15,16,17,18],
+        [19,20,'BULL','MISS']
+      ];
+
+      [els.scoreButtonsRow1, els.scoreButtonsRow2, els.scoreButtonsRow3, els.scoreButtonsRow4].forEach((row, idx) => {
+        row.innerHTML = scoreSets[idx].map(item => {
+          const label = item === 'BULL' ? 'Bull' : item === 'MISS' ? 'Miss' : item;
+          const special = (item === 'BULL' || item === 'MISS') ? 'special' : '';
+          const missClass = item === 'MISS' ? 'miss' : '';
+          return `<button class="score-btn ${special} ${missClass}" type="button" data-score="${item}">${label}</button>`;
+        }).join('');
+      });
+
+      els.multiplierButtons.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-mult]');
+        if (!btn || !state.started) return;
+        state.turnBuilder.selectedMultiplier = Number(btn.dataset.mult);
+        updateTurnBuilderUI();
+      });
+
+      [els.scoreButtonsRow1, els.scoreButtonsRow2, els.scoreButtonsRow3, els.scoreButtonsRow4].forEach(row => {
+        row.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-score]');
+          if (!btn || !state.started) return;
+          const raw = btn.dataset.score;
+          state.turnBuilder.selectedBase = raw;
+          updateTurnBuilderUI();
+        });
+      });
     }
 
     function startGame() {
@@ -936,7 +1106,8 @@
         currentDarts: ['—', '—', '—'],
         currentRoundScore: 0,
         currentResult: 'Pending',
-        isHouse: false
+        isHouse: false,
+        busted: false
       }));
 
       state.started = true;
@@ -945,7 +1116,7 @@
       els.finalPanel.style.display = 'none';
       startRound();
       renderAll();
-      setNotice('Game started. Enter scores for the first player.', 'success');
+      setNotice('Game started. Build the first dart using the score buttons.', 'success');
     }
 
     function startRound() {
@@ -953,9 +1124,7 @@
       const n = state.players.length;
       const startIndex = (state.round - 1) % n;
       state.roundOrder = [];
-      for (let i = 0; i < n; i++) {
-        state.roundOrder.push((startIndex + i) % n);
-      }
+      for (let i = 0; i < n; i++) state.roundOrder.push((startIndex + i) % n);
       state.currentTurnIndex = 0;
 
       state.players.forEach((p, idx) => {
@@ -963,94 +1132,197 @@
         p.currentRoundScore = 0;
         p.currentResult = 'Pending';
         p.isHouse = idx === state.roundOrder[state.roundOrder.length - 1];
+        p.busted = false;
       });
+
+      resetTurnBuilder();
     }
 
     function currentPlayer() {
       if (!state.started || state.round > MAX_ROUNDS) return null;
-      const playerIndex = state.roundOrder[state.currentTurnIndex];
-      return state.players[playerIndex];
+      return state.players[state.roundOrder[state.currentTurnIndex]];
     }
 
-    function parseDarts() {
-      const raw = [els.dart1.value, els.dart2.value, els.dart3.value];
-      const darts = raw.map(v => v === '' ? null : Number(v));
+    function resetTurnBuilder() {
+      state.turnBuilder = {
+        darts: [],
+        selectedBase: null,
+        selectedMultiplier: 1
+      };
+      updateTurnBuilderUI();
+    }
 
-      for (let i = 0; i < darts.length; i++) {
-        if (darts[i] !== null) {
-          if (!Number.isInteger(darts[i]) || darts[i] < 0 || darts[i] > 20) {
-            return { error: `Dart ${i + 1} must be an integer from 0 to 20.` };
-          }
-        }
+    function getBaseLabel(base) {
+      if (base === null) return '—';
+      if (base === 'BULL') return 'Bull';
+      if (base === 'MISS') return 'Miss';
+      return String(base);
+    }
+
+    function getBaseLockKey(base) {
+      if (base === 'BULL') return LOCK_KEY_BULL;
+      if (base === 'MISS') return null;
+      return String(base);
+    }
+
+    function getDartNumericValue(base, multiplier) {
+      if (base === 'MISS') return 0;
+      if (base === 'BULL') return BULL_VALUE * multiplier;
+      return Number(base) * multiplier;
+    }
+
+    function formatDart(base, multiplier, numericValue) {
+      if (base === 'MISS') return 'Miss (0)';
+      if (multiplier === 1) {
+        return base === 'BULL' ? `Bull (${numericValue})` : `${base}`;
+      }
+      return `${multiplier}x ${base === 'BULL' ? 'Bull' : base} (${numericValue})`;
+    }
+
+    function lockCurrentDart() {
+      if (!state.started) {
+        setNotice('Start the game first.', 'error');
+        return;
       }
 
-      return { darts };
+      if (state.turnBuilder.darts.length >= 3) {
+        setNotice('This turn already has 3 darts.', 'error');
+        return;
+      }
+
+      if (state.turnBuilder.selectedBase === null) {
+        setNotice('Select a number, Bull, or Miss first.', 'error');
+        return;
+      }
+
+      const player = currentPlayer();
+      const base = state.turnBuilder.selectedBase;
+      const multiplier = state.turnBuilder.selectedMultiplier;
+      const lockKey = getBaseLockKey(base);
+
+      if (lockKey && state.roundLockedNumbers.has(lockKey)) {
+        setNotice(`${player.name} cannot hit ${getBaseLabel(base)}. That number is already taken this round.`, 'error');
+        return;
+      }
+
+      const numericValue = getDartNumericValue(base, multiplier);
+      const dart = {
+        base,
+        multiplier,
+        numericValue,
+        display: formatDart(base, multiplier, numericValue)
+      };
+
+      const prospectiveTotal = state.turnBuilder.darts.reduce((sum, d) => sum + d.numericValue, 0) + numericValue;
+
+      if (prospectiveTotal > 21) {
+        state.turnBuilder.darts.push({
+          ...dart,
+          display: `BUST (${dart.display})`,
+          busted: true
+        });
+        updateTurnBuilderUI();
+        flashBust(`${player.name} BUST`);
+        return;
+      }
+
+      state.turnBuilder.darts.push(dart);
+
+      if (lockKey) state.roundLockedNumbers.add(lockKey);
+
+      state.turnBuilder.selectedBase = null;
+      state.turnBuilder.selectedMultiplier = 1;
+
+      updateTurnBuilderUI();
+
+      if (state.turnBuilder.darts.length === 3) {
+        setNotice('3 darts locked. Submit the turn.', 'success');
+      } else {
+        setNotice(`Dart ${state.turnBuilder.darts.length} locked for ${player.name}.`, 'success');
+      }
     }
 
-    function submitTurn(dartsInput = null) {
+    function undoLastDart() {
+      if (!state.started) return;
+      if (!state.turnBuilder.darts.length) {
+        setNotice('No darts to undo.', 'error');
+        return;
+      }
+
+      state.turnBuilder.darts.pop();
+      rebuildRoundLocksFromPlayedTurnsAndCurrentBuilder();
+      updateTurnBuilderUI();
+      setNotice('Last dart removed.', 'success');
+    }
+
+    function clearTurn() {
+      if (!state.started) return;
+      state.turnBuilder.darts = [];
+      state.turnBuilder.selectedBase = null;
+      state.turnBuilder.selectedMultiplier = 1;
+      rebuildRoundLocksFromPlayedTurnsAndCurrentBuilder();
+      updateTurnBuilderUI();
+      setNotice('Current turn cleared.', 'success');
+    }
+
+    function rebuildRoundLocksFromPlayedTurnsAndCurrentBuilder() {
+      const newLocks = new Set();
+
+      state.players.forEach(player => {
+        player.currentDarts.forEach(d => {
+          if (typeof d === 'object' && d && d.lockKey) newLocks.add(d.lockKey);
+        });
+      });
+
+      state.turnBuilder.darts.forEach(d => {
+        const key = getBaseLockKey(d.base);
+        if (key) newLocks.add(key);
+      });
+
+      state.roundLockedNumbers = newLocks;
+    }
+
+    function submitTurn() {
       if (!state.started) {
         setNotice('Start the game first.', 'error');
         return;
       }
 
       const player = currentPlayer();
-      if (!player) return;
+      const darts = state.turnBuilder.darts.slice();
+      const busted = darts.some(d => d.busted);
 
-      const parsed = dartsInput || parseDarts();
-      if (parsed.error) {
-        setNotice(parsed.error, 'error');
+      if (!darts.length) {
+        setNotice('Lock at least one dart before submitting.', 'error');
         return;
       }
 
-      const darts = parsed.darts;
-      const takenBeforeTurn = new Set(state.roundLockedNumbers);
-      let sum = 0;
-      let bust = false;
-      const display = ['—', '—', '—'];
-
-      for (let i = 0; i < 3; i++) {
-        const val = darts[i];
-
-        if (val === null || val === undefined) {
-          if (i === 0) {
-            display[0] = 0;
-          }
-          continue;
-        }
-
-        if (val !== 0 && takenBeforeTurn.has(val)) {
-          setNotice(`${player.name} cannot hit ${val}. That number has already been hit this round.`, 'error');
-          return;
-        }
-
-        sum += val;
-        display[i] = val;
-
-        if (val !== 0) {
-          state.roundLockedNumbers.add(val);
-        }
-
-        if ((i === 0 || i === 1) && sum > 21) {
-          bust = true;
-          display[i] = `BUST (${val})`;
-          for (let j = i + 1; j < 3; j++) display[j] = '—';
-          sum = 0;
-          break;
-        }
-      }
-
-      player.currentDarts = display;
-      player.currentRoundScore = bust ? 0 : sum;
-
-      if (bust) {
+      if (busted) {
+        player.currentDarts = [
+          darts[0]?.display || '—',
+          '—',
+          '—'
+        ];
+        player.currentRoundScore = 0;
         player.currentResult = 'Bust';
-        setNotice(`${player.name} busted. Turn over.`, 'error');
+        player.busted = true;
       } else {
+        player.currentDarts = [
+          darts[0]?.display || '—',
+          darts[1]?.display || '—',
+          darts[2]?.display || '—'
+        ];
+        player.currentRoundScore = darts.reduce((sum, d) => sum + d.numericValue, 0);
         player.currentResult = 'Scored';
-        setNotice(`${player.name} posted ${player.currentRoundScore} this round.`, 'success');
+        player.busted = false;
       }
 
-      clearThrowInputs();
+      player.currentDartsMeta = darts.map(d => ({
+        base: d.base,
+        lockKey: getBaseLockKey(d.base)
+      }));
+
+      resetTurnBuilder();
       advanceTurnOrRound();
       renderAll();
     }
@@ -1058,10 +1330,12 @@
     function advanceTurnOrRound() {
       if (state.currentTurnIndex < state.roundOrder.length - 1) {
         state.currentTurnIndex += 1;
+        resetTurnBuilder();
         return;
       }
 
       scoreRound();
+
       if (state.round >= MAX_ROUNDS) {
         endGame();
       } else {
@@ -1072,47 +1346,75 @@
 
     function scoreRound() {
       const house = state.players.find(p => p.isHouse);
-      const houseScore = house.currentRoundScore;
+      const nonHouse = state.players.filter(p => !p.isHouse);
       const roundSummary = [];
 
-      state.players.forEach(player => {
-        if (!player.isHouse) {
-          if (houseScore > player.currentRoundScore) {
+      roundSummary.push(`Round ${state.round}: House was <strong>${escapeHtml(house.name)}</strong> with <strong>${house.busted ? 'BUST' : house.currentRoundScore}</strong>.`);
+
+      if (house.busted) {
+        const survivors = nonHouse.filter(p => !p.busted);
+        const tiedBust = nonHouse.filter(p => p.busted);
+
+        survivors.forEach(p => {
+          p.overall += 3;
+          p.currentResult = 'Beat House';
+        });
+
+        tiedBust.forEach(p => {
+          p.currentResult = 'Bust';
+        });
+
+        house.currentResult = 'House Bust';
+
+        if (survivors.length) {
+          roundSummary.push(`${survivors.map(p => escapeHtml(p.name)).join(', ')} earned <strong>3 pts</strong> because the House busted.`);
+        }
+        if (tiedBust.length) {
+          roundSummary.push(`${tiedBust.map(p => escapeHtml(p.name)).join(', ')} also busted and earned <strong>0 pts</strong>.`);
+        }
+      } else {
+        nonHouse.forEach(player => {
+          if (player.busted) {
+            player.currentResult = 'Bust';
+            return;
+          }
+
+          if (house.currentRoundScore > player.currentRoundScore) {
             player.currentResult = 'Lost to House';
-          } else if (player.currentRoundScore > houseScore) {
+          } else if (player.currentRoundScore > house.currentRoundScore) {
             player.overall += 3;
             player.currentResult = 'Beat House';
           } else {
             player.overall += 1;
             player.currentResult = 'Tied House';
           }
+        });
+
+        const tiedPlayers = nonHouse.filter(p => !p.busted && p.currentRoundScore === house.currentRoundScore);
+        if (tiedPlayers.length) {
+          house.overall += 1;
+          house.currentResult = 'House Tie';
+        } else {
+          const beaters = nonHouse.filter(p => !p.busted && p.currentRoundScore > house.currentRoundScore);
+          house.currentResult = beaters.length ? 'House Lost' : 'House Won';
         }
-      });
 
-      const tiedPlayers = state.players.filter(p => !p.isHouse && p.currentRoundScore === houseScore);
-      const someoneTiedHouse = tiedPlayers.length > 0;
+        const winners = nonHouse.filter(p => p.currentResult === 'Beat House');
+        const losers = nonHouse.filter(p => p.currentResult === 'Lost to House');
+        const busts = nonHouse.filter(p => p.currentResult === 'Bust');
 
-      if (someoneTiedHouse) {
-        house.overall += 1;
-        house.currentResult = 'House Tie';
-      } else {
-        const beaters = state.players.filter(p => !p.isHouse && p.currentRoundScore > houseScore);
-        house.currentResult = beaters.length ? 'House Lost' : 'House Won';
-      }
-
-      roundSummary.push(`Round ${state.round}: House was <strong>${house.name}</strong> with <strong>${houseScore}</strong>.`);
-
-      const winners = state.players.filter(p => !p.isHouse && p.currentResult === 'Beat House');
-      const losers = state.players.filter(p => !p.isHouse && p.currentResult === 'Lost to House');
-
-      if (winners.length) {
-        roundSummary.push(`${winners.map(p => p.name).join(', ')} earned <strong>3 pts</strong>.`);
-      }
-      if (tiedPlayers.length) {
-        roundSummary.push(`${tiedPlayers.map(p => p.name).join(', ')} tied the House and each earned <strong>1 pt</strong>; the House also earned <strong>1 pt</strong>.`);
-      }
-      if (losers.length) {
-        roundSummary.push(`${losers.map(p => p.name).join(', ')} scored <strong>0 pts</strong> toward overall.`);
+        if (winners.length) {
+          roundSummary.push(`${winners.map(p => escapeHtml(p.name)).join(', ')} earned <strong>3 pts</strong>.`);
+        }
+        if (tiedPlayers.length) {
+          roundSummary.push(`${tiedPlayers.map(p => escapeHtml(p.name)).join(', ')} tied the House and each earned <strong>1 pt</strong>; the House also earned <strong>1 pt</strong>.`);
+        }
+        if (losers.length) {
+          roundSummary.push(`${losers.map(p => escapeHtml(p.name)).join(', ')} scored <strong>0 pts</strong> toward overall.`);
+        }
+        if (busts.length) {
+          roundSummary.push(`${busts.map(p => escapeHtml(p.name)).join(', ')} busted and earned <strong>0 pts</strong>.`);
+        }
       }
 
       state.logs.unshift(roundSummary.join(' '));
@@ -1143,24 +1445,28 @@
       els.scoreboardBody.innerHTML = state.players.map(player => {
         const resultClass =
           player.currentResult.includes('Beat') ? 'win' :
-          player.currentResult.includes('Lost') || player.currentResult === 'Bust' ? 'lose' :
+          player.currentResult.includes('Lost') || player.currentResult === 'Bust' || player.currentResult.includes('Bust') ? 'lose' :
           player.currentResult.includes('Tie') ? 'tie' : 'pending';
+
+        const d1 = String(player.currentDarts[0] ?? '—');
+        const d2 = String(player.currentDarts[1] ?? '—');
+        const d3 = String(player.currentDarts[2] ?? '—');
 
         return `
           <tr>
             <td>
               <div class="player-cell">
-                <div class="avatar">${escapeHtml(player.name.charAt(0).toUpperCase() || '?')}</div>
+                <div class="avatar">${escapeHtml((player.name[0] || '?').toUpperCase())}</div>
                 <div>
                   ${escapeHtml(player.name)}
                   ${player.isHouse ? '<span class="house-badge">House</span>' : ''}
                 </div>
               </div>
             </td>
-            <td><div class="dart-list"><span class="dart-pill ${String(player.currentDarts[0]).includes('BUST') ? 'bust' : ''}">${escapeHtml(String(player.currentDarts[0]))}</span></div></td>
-            <td><div class="dart-list"><span class="dart-pill ${String(player.currentDarts[1]).includes('BUST') ? 'bust' : ''}">${escapeHtml(String(player.currentDarts[1]))}</span></div></td>
-            <td><div class="dart-list"><span class="dart-pill ${String(player.currentDarts[2]).includes('BUST') ? 'bust' : ''}">${escapeHtml(String(player.currentDarts[2]))}</span></div></td>
-            <td><span class="round-score">${player.currentRoundScore}</span></td>
+            <td><span class="dart-pill ${d1.includes('BUST') ? 'bust' : ''}">${escapeHtml(d1)}</span></td>
+            <td><span class="dart-pill ${d2.includes('BUST') ? 'bust' : ''}">${escapeHtml(d2)}</span></td>
+            <td><span class="dart-pill ${d3.includes('BUST') ? 'bust' : ''}">${escapeHtml(d3)}</span></td>
+            <td><span class="round-score">${player.busted ? 'BUST' : player.currentRoundScore}</span></td>
             <td><span class="overall">${player.overall}</span></td>
             <td><span class="result-tag ${resultClass}">${escapeHtml(player.currentResult)}</span></td>
           </tr>
@@ -1173,8 +1479,9 @@
         els.currentPlayerLabel.textContent = '—';
         els.currentRoleLabel.textContent = '—';
         els.currentRoundLabel.textContent = state.round ? `${state.round} / ${MAX_ROUNDS}` : `0 / ${MAX_ROUNDS}`;
-        els.submitTurnBtn.disabled = true;
-        els.skipTurnBtn.disabled = true;
+        els.runningTotalLabel.textContent = '0';
+        disableTurnButtons(true);
+        updateTurnBuilderUI();
         return;
       }
 
@@ -1182,12 +1489,21 @@
       els.currentPlayerLabel.textContent = player ? player.name : '—';
       els.currentRoleLabel.textContent = player?.isHouse ? 'House' : 'Player';
       els.currentRoundLabel.textContent = `${state.round} / ${MAX_ROUNDS}`;
-      els.submitTurnBtn.disabled = false;
-      els.skipTurnBtn.disabled = false;
+      els.runningTotalLabel.textContent = computeCurrentBuilderTotal() > 21 ? 'BUST' : String(computeCurrentBuilderTotal());
+      disableTurnButtons(false);
+      updateTurnBuilderUI();
+    }
+
+    function disableTurnButtons(disabled) {
+      document.querySelectorAll('.score-btn,.mult-btn').forEach(btn => btn.disabled = disabled);
+      els.lockDartBtn.disabled = disabled;
+      els.undoDartBtn.disabled = disabled;
+      els.clearTurnBtn.disabled = disabled;
+      els.submitTurnBtn.disabled = disabled;
     }
 
     function renderRoundInfo() {
-      els.roundDisplay.textContent = `Round ${Math.min(state.round, MAX_ROUNDS)} / ${MAX_ROUNDS}`;
+      els.roundDisplay.textContent = `Round ${Math.min(Math.max(state.round, 0), MAX_ROUNDS)} / ${MAX_ROUNDS}`;
 
       if (!state.started && state.round === 0) {
         els.orderDisplay.textContent = 'Waiting to start';
@@ -1206,10 +1522,14 @@
     }
 
     function renderLocks() {
-      const nums = Array.from({length:21}, (_,i)=>i);
-      els.numbersLock.innerHTML = nums.map(n => `
-        <span class="lock-pill ${state.roundLockedNumbers.has(n) && n !== 0 ? 'taken' : ''}">
-          ${n}${state.roundLockedNumbers.has(n) && n !== 0 ? ' taken' : ''}
+      const lockValues = [
+        ...Array.from({length:20}, (_,i) => String(i + 1)),
+        LOCK_KEY_BULL
+      ];
+
+      els.numbersLock.innerHTML = lockValues.map(v => `
+        <span class="lock-pill ${state.roundLockedNumbers.has(v) ? 'taken' : ''}">
+          ${v === LOCK_KEY_BULL ? 'Bull' : v}${state.roundLockedNumbers.has(v) ? ' taken' : ''}
         </span>
       `).join('');
     }
@@ -1222,12 +1542,43 @@
       els.logList.innerHTML = state.logs.map(item => `<div class="log-item">${item}</div>`).join('');
     }
 
-    function renderAll() {
-      renderScoreboard();
-      renderTurnPanel();
-      renderRoundInfo();
-      renderLocks();
-      renderLogs();
+    function updateTurnBuilderUI() {
+      const dartNum = Math.min(state.turnBuilder.darts.length + 1, 3);
+      els.dartStageLabel.textContent = state.turnBuilder.darts.some(d => d.busted) ? 'Bust recorded' : `Dart ${dartNum} of 3`;
+
+      els.previewBase.textContent = `Base: ${getBaseLabel(state.turnBuilder.selectedBase)}`;
+      els.previewMult.textContent = `Mult: ${state.turnBuilder.selectedMultiplier}x`;
+
+      let previewValue = '—';
+      if (state.turnBuilder.selectedBase !== null) {
+        previewValue = getDartNumericValue(state.turnBuilder.selectedBase, state.turnBuilder.selectedMultiplier);
+      }
+      els.previewValue.textContent = `Value: ${previewValue}`;
+
+      document.querySelectorAll('.mult-btn').forEach(btn => {
+        btn.classList.toggle('selected', Number(btn.dataset.mult) === state.turnBuilder.selectedMultiplier);
+      });
+
+      document.querySelectorAll('.score-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.score === String(state.turnBuilder.selectedBase));
+      });
+
+      const darts = state.turnBuilder.darts;
+      els.dartHistory1.textContent = darts[0]?.display || '—';
+      els.dartHistory2.textContent = darts[1]?.display || '—';
+      els.dartHistory3.textContent = darts[2]?.display || '—';
+
+      const total = computeCurrentBuilderTotal();
+      els.runningTotalLabel.textContent = total > 21 || darts.some(d => d.busted) ? 'BUST' : String(total);
+
+      const busted = darts.some(d => d.busted);
+      els.lockDartBtn.disabled = !state.started || busted || darts.length >= 3;
+      els.submitTurnBtn.disabled = !state.started || !darts.length;
+    }
+
+    function computeCurrentBuilderTotal() {
+      if (state.turnBuilder.darts.some(d => d.busted)) return 22;
+      return state.turnBuilder.darts.reduce((sum, d) => sum + d.numericValue, 0);
     }
 
     function setNotice(message, type = '') {
@@ -1235,10 +1586,14 @@
       els.notice.innerHTML = message;
     }
 
-    function clearThrowInputs() {
-      els.dart1.value = '';
-      els.dart2.value = '';
-      els.dart3.value = '';
+    function flashBust(message) {
+      els.notice.className = 'notice bust-flash';
+      els.notice.textContent = message || 'BUST';
+      setTimeout(() => {
+        if (els.notice.classList.contains('bust-flash')) {
+          setNotice('Bust recorded. Submit the turn to continue.', 'error');
+        }
+      }, 1500);
     }
 
     function resetGame() {
@@ -1249,7 +1604,7 @@
       state.roundOrder = [];
       state.roundLockedNumbers = new Set();
       state.logs = [];
-      clearThrowInputs();
+      resetTurnBuilder();
       initInputs();
       els.finalPanel.style.display = 'none';
       setNotice('Game reset. Add players and start a new match.');
@@ -1257,27 +1612,32 @@
       els.topStatus.textContent = 'Set up players to begin';
     }
 
+    function renderAll() {
+      renderScoreboard();
+      renderTurnPanel();
+      renderRoundInfo();
+      renderLocks();
+      renderLogs();
+    }
+
     function escapeHtml(str) {
       return String(str)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#039;");
     }
 
     els.addPlayerBtn.addEventListener('click', () => createPlayerInput(''));
     els.startGameBtn.addEventListener('click', startGame);
     els.resetBtn.addEventListener('click', resetGame);
+    els.lockDartBtn.addEventListener('click', lockCurrentDart);
+    els.undoDartBtn.addEventListener('click', undoLastDart);
+    els.clearTurnBtn.addEventListener('click', clearTurn);
+    els.submitTurnBtn.addEventListener('click', submitTurn);
 
-    els.throwForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      submitTurn();
-    });
-
-    els.skipTurnBtn.addEventListener('click', () => {
-      submitTurn({ darts: [0, null, null] });
-    });
+    buildControlButtons();
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry, i) => {
