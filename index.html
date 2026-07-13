@@ -1287,14 +1287,12 @@
     }
 
     function updateLogs() {
+      // Called only from finishRound(), after all roundScores have been updated.
       const houseIdx = state.roundOrder[state.roundOrder.length - 1];
-      const housePlayer = state.players[houseIdx];
-      const houseScore = calculateScore(housePlayer.darts);
-      const houseBusted = houseScore > 21;
       const playerSummaries = state.players.map((p, idx) => {
         const score = calculateScore(p.darts);
         const busted = score > 21;
-        const result = p.roundScores[p.roundScores.length - 1] || 'pending';
+        const result = p.roundScores[p.roundScores.length - 1];
         const label = idx === houseIdx ? `${escapeHtml(p.name)} (House)` : escapeHtml(p.name);
         return `${label}: ${busted ? 'BUST' : score} → <span class="result-tag ${result}">${result}</span>`;
       }).join(' | ');
@@ -1429,7 +1427,12 @@
     const revealEls = document.querySelectorAll('.reveal');
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver(entries => {
-        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
       }, { threshold: 0.05 });
       revealEls.forEach(el => io.observe(el));
     } else {
