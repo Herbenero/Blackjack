@@ -1182,20 +1182,30 @@
 
     function lockDart() {
       if (state.turnBuilder.selectedBase === null) {
-        showNotice('Select a number', 'error');
+        showNotice('Select a number first', 'error');
         return;
       }
-      const value = state.turnBuilder.selectedBase === LOCK_KEY_BULL ? BULL_VALUE : state.turnBuilder.selectedBase === 'MISS' ? 0 : state.turnBuilder.selectedBase;
+      if (state.turnBuilder.darts.length >= 3) {
+        showNotice('Already locked 3 darts. Submit your turn.', 'error');
+        return;
+      }
+      const base = state.turnBuilder.selectedBase;
+      // Enforce number lock rule: locked base numbers and Bull cannot be hit again this round
+      if (base !== 'MISS' && state.roundLockedNumbers.has(base)) {
+        const label = base === LOCK_KEY_BULL ? 'Bull' : base;
+        showNotice(`${label} is already locked this round!`, 'error');
+        return;
+      }
+      const value = base === LOCK_KEY_BULL ? BULL_VALUE : base === 'MISS' ? 0 : base;
       state.turnBuilder.darts.push({
-        base: state.turnBuilder.selectedBase,
+        base,
         multiplier: state.turnBuilder.selectedMultiplier,
         value: value * state.turnBuilder.selectedMultiplier
       });
-      
-      if (state.turnBuilder.selectedBase !== 'MISS' && state.turnBuilder.selectedBase !== LOCK_KEY_BULL) {
-        state.roundLockedNumbers.add(state.turnBuilder.selectedBase);
+      // Lock the number for the rest of the round (Bull locks separately; Miss does not lock)
+      if (base !== 'MISS') {
+        state.roundLockedNumbers.add(base);
       }
-      
       state.turnBuilder.selectedBase = null;
       state.turnBuilder.selectedMultiplier = 1;
       updateUi();
@@ -1214,7 +1224,8 @@
     function undoDart() {
       if (state.turnBuilder.darts.length === 0) return;
       const removed = state.turnBuilder.darts.pop();
-      if (removed.base !== 'MISS' && removed.base !== LOCK_KEY_BULL) {
+      // Remove from locked numbers (Bull and base numbers; Miss was never added)
+      if (removed.base !== 'MISS') {
         state.roundLockedNumbers.delete(removed.base);
       }
       updateUi();
@@ -1222,7 +1233,7 @@
 
     function clearTurn() {
       state.turnBuilder.darts.forEach(d => {
-        if (d.base !== 'MISS' && d.base !== LOCK_KEY_BULL) {
+        if (d.base !== 'MISS') {
           state.roundLockedNumbers.delete(d.base);
         }
       });
@@ -1241,7 +1252,11 @@
     }
 
     function updateUi() {
-      const isHouse = state.currentTurnIndex === state.players.length - 1;
+      if (!state.started) {
+        els.topStatus.textContent = 'Set up players to begin';
+        return;
+      }
+      const isHouse = state.currentTurnIndex === state.roundOrder.length - 1;
       const currentPlayer = state.players[state.roundOrder[state.currentTurnIndex]];
       const runningTotal = calculateScore(state.turnBuilder.darts);
 
@@ -1257,8 +1272,8 @@
       const value = base === null ? '—' : (base === LOCK_KEY_BULL ? BULL_VALUE : base === 'MISS' ? 0 : base) * state.turnBuilder.selectedMultiplier;
       els.previewValue.textContent = `Value: ${value}`;
 
-      const dartCount = state.turnBuilder.darts.length + 1;
-      els.dartStageLabel.textContent = `Dart ${dartCount} of 3`;
+      const dartCount = state.turnBuilder.darts.length;
+      els.dartStageLabel.textContent = dartCount >= 3 ? 'All darts locked — submit turn' : `Dart ${dartCount + 1} of 3`;
 
       els.dartHistory1.textContent = state.turnBuilder.darts[0] ? `${state.turnBuilder.darts[0].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[0].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[0].base}×${state.turnBuilder.darts[0].multiplier} = ${state.turnBuilder.darts[0].value}` : '—';
       els.dartHistory2.textContent = state.turnBuilder.darts[1] ? `${state.turnBuilder.darts[1].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[1].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[1].base}×${state.turnBuilder.darts[1].multiplier} = ${state.turnBuilder.darts[1].value}` : '—';
@@ -1268,16 +1283,20 @@
       renderButtons();
       renderLockedNumbers();
       renderScoreboard();
-      updateLogs();
-      els.topStatus.textContent = state.started ? `Round ${state.round} in progress` : 'Set up players to begin';
+      els.topStatus.textContent = `Round ${state.round} in progress`;
     }
 
     function updateLogs() {
+      // Called only from finishRound(), after all roundScores have been updated.
       const houseIdx = state.roundOrder[state.roundOrder.length - 1];
-      const housePlayer = state.players[houseIdx];
-      const houseScore = calculateScore(housePlayer.darts);
-      const houseBusted = houseScore > 21;
-      const log = `<strong>Round ${state.round}:</strong> ${escapeHtml(housePlayer.name)} (House) ${houseBusted ? 'BUSTED' : `scored ${houseScore}`}`;
+      const playerSummaries = state.players.map((p, idx) => {
+        const score = calculateScore(p.darts);
+        const busted = score > 21;
+        const result = p.roundScores[p.roundScores.length - 1];
+        const label = idx === houseIdx ? `${escapeHtml(p.name)} (House)` : escapeHtml(p.name);
+        return `${label}: ${busted ? 'BUST' : score} → <span class="result-tag ${result}">${result}</span>`;
+      }).join(' | ');
+      const log = `<strong>Round ${state.round}:</strong> ${playerSummaries}`;
       state.logs.push(log);
       els.logList.innerHTML = state.logs.map(l => `<div class="log-item">${l}</div>`).join('');
     }
@@ -1381,12 +1400,18 @@
       state.started = false;
       state.round = 0;
       state.logs = [];
-      renderPlayerInputs();
+      state.roundOrder = [];
+      state.roundLockedNumbers.clear();
+      clearTurnBuilder();
       els.finalPanel.style.display = 'none';
+      els.scoreboardBody.innerHTML = '';
+      els.logList.innerHTML = '';
+      els.roundDisplay.textContent = 'Round 0 / 8';
+      els.orderDisplay.textContent = 'Waiting to start';
       els.playerInputs.innerHTML = '';
-      state.players = [];
       addPlayer();
       addPlayer();
+      updateUi();
     });
     els.lockDartBtn.addEventListener('click', lockDart);
     els.submitTurnBtn.addEventListener('click', submitTurn);
@@ -1397,6 +1422,22 @@
     addPlayer();
     addPlayer();
     updateUi();
+
+    // Reveal animation for panels
+    const revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.05 });
+      revealEls.forEach(el => io.observe(el));
+    } else {
+      revealEls.forEach(el => el.classList.add('visible'));
+    }
   </script>
 </body>
 </html>
