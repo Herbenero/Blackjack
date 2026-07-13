@@ -1001,24 +1001,24 @@
       currentRoleLabel: document.getElementById('currentRoleLabel'),
       currentRoundLabel: document.getElementById('currentRoundLabel'),
       runningTotalLabel: document.getElementById('runningTotalLabel'),
-      notice: document.getElementById('notice'),
-      numbersLock: document.getElementById('numbersLock'),
-      logList: document.getElementById('logList'),
-      topStatus: document.getElementById('topStatus'),
-      finalPanel: document.getElementById('finalPanel'),
-      finalList: document.getElementById('finalList'),
+      dartStageLabel: document.getElementById('dartStageLabel'),
+      previewBase: document.getElementById('previewBase'),
+      previewMult: document.getElementById('previewMult'),
+      previewValue: document.getElementById('previewValue'),
       multiplierButtons: document.getElementById('multiplierButtons'),
       scoreButtonsRow1: document.getElementById('scoreButtonsRow1'),
       scoreButtonsRow2: document.getElementById('scoreButtonsRow2'),
       scoreButtonsRow3: document.getElementById('scoreButtonsRow3'),
       scoreButtonsRow4: document.getElementById('scoreButtonsRow4'),
-      previewBase: document.getElementById('previewBase'),
-      previewMult: document.getElementById('previewMult'),
-      previewValue: document.getElementById('previewValue'),
-      dartStageLabel: document.getElementById('dartStageLabel'),
       dartHistory1: document.getElementById('dartHistory1'),
       dartHistory2: document.getElementById('dartHistory2'),
       dartHistory3: document.getElementById('dartHistory3'),
+      notice: document.getElementById('notice'),
+      numbersLock: document.getElementById('numbersLock'),
+      logList: document.getElementById('logList'),
+      finalPanel: document.getElementById('finalPanel'),
+      finalList: document.getElementById('finalList'),
+      topStatus: document.getElementById('topStatus'),
       lockDartBtn: document.getElementById('lockDartBtn'),
       undoDartBtn: document.getElementById('undoDartBtn'),
       clearTurnBtn: document.getElementById('clearTurnBtn'),
@@ -1087,7 +1087,6 @@
         return;
       }
       clearTurnBuilder();
-      renderScoreboard();
       updateUi();
     }
 
@@ -1142,10 +1141,8 @@
             result = 'lose';
           } else if (houseBusted) {
             result = 'win';
-            pointsEarned = 3;
           } else if (playerScore > houseScore) {
             result = 'win';
-            pointsEarned = 3;
           } else if (playerScore === houseScore) {
             result = 'tie';
             pointsEarned = 1;
@@ -1188,7 +1185,7 @@
         showNotice('Select a number', 'error');
         return;
       }
-      const value = state.turnBuilder.selectedBase === LOCK_KEY_BULL ? BULL_VALUE : state.turnBuilder.selectedBase;
+      const value = state.turnBuilder.selectedBase === LOCK_KEY_BULL ? BULL_VALUE : state.turnBuilder.selectedBase === 'MISS' ? 0 : state.turnBuilder.selectedBase;
       state.turnBuilder.darts.push({
         base: state.turnBuilder.selectedBase,
         multiplier: state.turnBuilder.selectedMultiplier,
@@ -1263,40 +1260,84 @@
       const dartCount = state.turnBuilder.darts.length + 1;
       els.dartStageLabel.textContent = `Dart ${dartCount} of 3`;
 
-      els.dartHistory1.textContent = state.turnBuilder.darts[0] ? `${state.turnBuilder.darts[0].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[0].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[0].base}×${state.turnBuilder.darts[0].multiplier}` : '—';
-      els.dartHistory2.textContent = state.turnBuilder.darts[1] ? `${state.turnBuilder.darts[1].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[1].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[1].base}×${state.turnBuilder.darts[1].multiplier}` : '—';
-      els.dartHistory3.textContent = state.turnBuilder.darts[2] ? `${state.turnBuilder.darts[2].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[2].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[2].base}×${state.turnBuilder.darts[2].multiplier}` : '—';
+      els.dartHistory1.textContent = state.turnBuilder.darts[0] ? `${state.turnBuilder.darts[0].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[0].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[0].base}×${state.turnBuilder.darts[0].multiplier} = ${state.turnBuilder.darts[0].value}` : '—';
+      els.dartHistory2.textContent = state.turnBuilder.darts[1] ? `${state.turnBuilder.darts[1].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[1].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[1].base}×${state.turnBuilder.darts[1].multiplier} = ${state.turnBuilder.darts[1].value}` : '—';
+      els.dartHistory3.textContent = state.turnBuilder.darts[2] ? `${state.turnBuilder.darts[2].base === LOCK_KEY_BULL ? 'Bull' : state.turnBuilder.darts[2].base === 'MISS' ? 'Miss' : state.turnBuilder.darts[2].base}×${state.turnBuilder.darts[2].multiplier} = ${state.turnBuilder.darts[2].value}` : '—';
 
-      renderScoreButtons();
-      renderMultiplierButtons();
+      updateNotice();
+      renderButtons();
       renderLockedNumbers();
-      showNotice(`${escapeHtml(currentPlayer.name)} - Dart ${dartCount}/3`, 'success');
+      renderScoreboard();
+      updateLogs();
+      els.topStatus.textContent = state.started ? `Round ${state.round} in progress` : 'Set up players to begin';
     }
 
-    function renderMultiplierButtons() {
-      els.multiplierButtons.innerHTML = [1, 2, 3].map(m => `
-        <button class="mult-btn ${state.turnBuilder.selectedMultiplier === m ? 'selected' : ''}" onclick="selectMultiplier(${m})">${m}x</button>
+    function updateLogs() {
+      const houseIdx = state.roundOrder[state.roundOrder.length - 1];
+      const housePlayer = state.players[houseIdx];
+      const houseScore = calculateScore(housePlayer.darts);
+      const houseBusted = houseScore > 21;
+      const log = `<strong>Round ${state.round}:</strong> ${escapeHtml(housePlayer.name)} (House) ${houseBusted ? 'BUSTED' : `scored ${houseScore}`}`;
+      state.logs.push(log);
+      els.logList.innerHTML = state.logs.map(l => `<div class="log-item">${l}</div>`).join('');
+    }
+
+    function showFinalScores() {
+      els.finalPanel.style.display = 'block';
+      els.finalList.innerHTML = state.players.map((p, idx) => `
+        <div class="final-row">
+          <div><div class="player-cell"><div class="avatar">${String.fromCharCode(65 + idx)}</div><span>${escapeHtml(p.name)}</span></div></div>
+          <div class="final-score">${p.overallScore}</div>
+        </div>
       `).join('');
     }
 
-    function renderScoreButtons() {
-      const rows = [
-        { el: els.scoreButtonsRow1, start: 1, end: 6 },
-        { el: els.scoreButtonsRow2, start: 7, end: 12 },
-        { el: els.scoreButtonsRow3, start: 13, end: 18 },
-        { el: els.scoreButtonsRow4, start: 19, end: 21 }
-      ];
+    function showNotice(msg, type = 'info') {
+      els.notice.textContent = msg;
+      els.notice.className = `notice ${type}`;
+      setTimeout(() => {
+        els.notice.className = 'notice';
+        els.notice.textContent = 'Ready!';
+      }, 3000);
+    }
 
-      rows.forEach(row => {
-        row.el.innerHTML = Array.from({length: row.end - row.start + 1}, (_, i) => row.start + i).map(num => `
-          <button class="score-btn ${state.turnBuilder.selectedBase === num ? 'selected' : ''} ${state.roundLockedNumbers.has(num) ? 'special' : ''}" onclick="selectBase(${num})">${num}</button>
-        `).join('');
-      });
+    function updateNotice() {
+      if (!state.started) {
+        els.notice.textContent = 'Game not started yet.';
+        return;
+      }
+      const runningTotal = calculateScore(state.turnBuilder.darts);
+      if (runningTotal > 21) {
+        els.notice.className = 'notice bust-flash';
+        els.notice.textContent = `⚠ BUST! Total is ${runningTotal}`;
+      } else {
+        els.notice.className = 'notice';
+        els.notice.textContent = `Ready! (Total: ${runningTotal})`;
+      }
+    }
 
-      const bullMiss = `
-        <button class="score-btn ${state.turnBuilder.selectedBase === LOCK_KEY_BULL ? 'selected' : ''}" onclick="selectBase('${LOCK_KEY_BULL}')">Bull</button>
-        <button class="score-btn miss ${state.turnBuilder.selectedBase === 'MISS' ? 'selected' : ''}" onclick="selectBase('MISS')">Miss</button>
-      `;
+    function renderButtons() {
+      els.multiplierButtons.innerHTML = [1, 2, 3].map(m => 
+        `<button class="mult-btn ${state.turnBuilder.selectedMultiplier === m ? 'selected' : ''}" onclick="selectMultiplier(${m})">${m}×</button>`
+      ).join('');
+
+      els.scoreButtonsRow1.innerHTML = [1, 2, 3, 4, 5, 6].map(n => 
+        `<button class="score-btn ${state.roundLockedNumbers.has(n) ? 'special' : ''} ${state.turnBuilder.selectedBase === n ? 'selected' : ''}" onclick="selectBase(${n})">${n}</button>`
+      ).join('');
+
+      els.scoreButtonsRow2.innerHTML = [7, 8, 9, 10, 11, 12].map(n => 
+        `<button class="score-btn ${state.roundLockedNumbers.has(n) ? 'special' : ''} ${state.turnBuilder.selectedBase === n ? 'selected' : ''}" onclick="selectBase(${n})">${n}</button>`
+      ).join('');
+
+      els.scoreButtonsRow3.innerHTML = [13, 14, 15, 16, 17, 18].map(n => 
+        `<button class="score-btn ${state.roundLockedNumbers.has(n) ? 'special' : ''} ${state.turnBuilder.selectedBase === n ? 'selected' : ''}" onclick="selectBase(${n})">${n}</button>`
+      ).join('');
+
+      els.scoreButtonsRow4.innerHTML = [19, 20].map(n => 
+        `<button class="score-btn ${state.roundLockedNumbers.has(n) ? 'special' : ''} ${state.turnBuilder.selectedBase === n ? 'selected' : ''}" onclick="selectBase(${n})">${n}</button>`
+      ).join('');
+
+      const bullMiss = `<button class="score-btn special ${state.turnBuilder.selectedBase === LOCK_KEY_BULL ? 'selected' : ''}" onclick="selectBase('${LOCK_KEY_BULL}')">Bull</button><button class="score-btn miss ${state.turnBuilder.selectedBase === 'MISS' ? 'selected' : ''}" onclick="selectBase('MISS')">Miss</button>`;
       els.scoreButtonsRow4.innerHTML += bullMiss;
     }
 
@@ -1330,33 +1371,6 @@
 
       els.roundDisplay.textContent = `Round ${state.round} / ${MAX_ROUNDS}`;
       els.orderDisplay.textContent = `First: ${escapeHtml(state.players[state.roundOrder[0]].name)}`;
-      els.topStatus.textContent = state.started ? `Round ${state.round} in progress` : 'Set up players to begin';
-    }
-
-    function updateLogs() {
-      const houseIdx = state.roundOrder[state.roundOrder.length - 1];
-      const housePlayer = state.players[houseIdx];
-      const houseScore = calculateScore(housePlayer.darts);
-      const houseBusted = houseScore > 21;
-      const log = `<strong>Round ${state.round}:</strong> ${escapeHtml(housePlayer.name)} (House) ${houseBusted ? 'BUSTED' : `scored ${houseScore}`}`;
-      state.logs.push(log);
-      els.logList.innerHTML = state.logs.map(l => `<div class="log-item">${l}</div>`).join('');
-    }
-
-    function showFinalScores() {
-      els.finalPanel.style.display = 'block';
-      els.finalList.innerHTML = state.players.map((p, idx) => `
-        <div class="final-row">
-          <div><div class="player-cell"><div class="avatar">${String.fromCharCode(65 + idx)}</div><span>${escapeHtml(p.name)}</span></div></div>
-          <div class="final-score">${p.overallScore}</div>
-        </div>
-      `).join('');
-      els.topStatus.textContent = 'Game Complete!';
-    }
-
-    function showNotice(msg, type = 'error') {
-      els.notice.textContent = msg;
-      els.notice.className = `notice ${type}`;
     }
 
     // Event listeners
@@ -1366,27 +1380,23 @@
       state.players = [];
       state.started = false;
       state.round = 0;
-      state.currentTurnIndex = 0;
-      state.roundOrder = [];
       state.logs = [];
-      els.playerInputs.innerHTML = '';
-      els.scoreboardBody.innerHTML = '';
-      els.logList.innerHTML = '';
+      renderPlayerInputs();
       els.finalPanel.style.display = 'none';
-      els.topStatus.textContent = 'Set up players to begin';
+      els.playerInputs.innerHTML = '';
+      state.players = [];
+      addPlayer();
+      addPlayer();
     });
     els.lockDartBtn.addEventListener('click', lockDart);
+    els.submitTurnBtn.addEventListener('click', submitTurn);
     els.undoDartBtn.addEventListener('click', undoDart);
     els.clearTurnBtn.addEventListener('click', clearTurn);
-    els.submitTurnBtn.addEventListener('click', submitTurn);
 
-    document.addEventListener('DOMContentLoaded', () => {
-      addPlayer();
-      addPlayer();
-      setTimeout(() => {
-        document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
-      }, 100);
-    });
+    // Initial setup
+    addPlayer();
+    addPlayer();
+    updateUi();
   </script>
 </body>
 </html>
