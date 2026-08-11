@@ -1024,6 +1024,27 @@
       clearTurnBtn: document.getElementById('clearTurnBtn'),
       submitTurnBtn: document.getElementById('submitTurnBtn')
     };
+    // Add this near the bottom or top of your script file
+function syncGameToHellcastle(gameName, resultSummary) {
+  const payload = {
+    date: new Date().toISOString().split('T')[0],
+    game: gameName,
+    summary: resultSummary
+  };
+
+  fetch("https://script.google.com/macros/s/AKfycby30NBO4KCHCo6EtGB-wYB8diDF2xtQQuatCJOUWrEab-sSE08EhflxTebKzVYuEg8fCQ/exec", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    keepalive: true
+  })
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP status ${res.status}`);
+    return res.json();
+  })
+  .then(data => console.log("Successfully logged to Hellcastle:", data))
+  .catch(err => console.warn("Hellcastle sync error:", err));
+}
 
     function addPlayer() {
       const idx = state.players.length;
@@ -1342,7 +1363,13 @@
       state.logs.push(log);
       els.logList.innerHTML = state.logs.map(l => `<div class="log-item">${l}</div>`).join('');
     }
+function declareWinner() {
+  // Local UI & state logic
+  showWinnerModal();
 
+  // Background sync trigger
+  syncGameToHellcastle("Blackjack Darts", formatFinalScores());
+}
     function showFinalScores() {
       els.finalPanel.style.display = 'block';
       els.finalList.innerHTML = state.players.map((p, idx) => `
