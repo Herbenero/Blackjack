@@ -262,6 +262,12 @@
     .tiny-btn:active,.btn:active,.score-btn:active{
       transform:translateY(0) scale(.98);
     }
+    .btn:disabled{
+      opacity:0.4;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow:none !important;
+    }
     .setup-actions,.turn-actions{
       display:flex;
       gap:.75rem;
@@ -283,6 +289,11 @@
       background:rgba(255,255,255,.04);
       color:var(--ink);
       border:1px solid rgba(255,255,255,.1);
+    }
+    .btn-warning{
+      background:rgba(242,193,78,.15);
+      color:var(--gold);
+      border:1px solid rgba(242,193,78,.35);
     }
     .btn-danger{
       background:rgba(221,78,61,.12);
@@ -807,6 +818,7 @@
 
             <div class="turn-actions" style="margin-top:1rem;">
               <button class="btn btn-primary" id="lockDartBtn" type="button">Lock Dart</button>
+              <button class="btn btn-warning" id="standBtn" type="button">Stand</button>
               <button class="btn btn-secondary" id="undoDartBtn" type="button">Undo Last Dart</button>
               <button class="btn btn-danger" id="clearTurnBtn" type="button">Clear Turn</button>
               <button class="btn btn-secondary" id="submitTurnBtn" type="button">Submit Turn</button>
@@ -879,7 +891,8 @@
       logs: [],
       turnBuilder: {
         darts: [],
-        selectedBase: null
+        selectedBase: null,
+        isStanding: false
       }
     };
 
@@ -912,6 +925,7 @@
       dartHistory2: document.getElementById('dartHistory2'),
       dartHistory3: document.getElementById('dartHistory3'),
       lockDartBtn: document.getElementById('lockDartBtn'),
+      standBtn: document.getElementById('standBtn'),
       undoDartBtn: document.getElementById('undoDartBtn'),
       clearTurnBtn: document.getElementById('clearTurnBtn'),
       submitTurnBtn: document.getElementById('submitTurnBtn')
@@ -1026,6 +1040,7 @@
       els.resetBtn.addEventListener('click', resetGame);
 
       els.lockDartBtn.addEventListener('click', lockCurrentDart);
+      els.standBtn.addEventListener('click', standTurn);
       els.undoDartBtn.addEventListener('click', undoLastDart);
       els.clearTurnBtn.addEventListener('click', clearTurnBuilder);
       els.submitTurnBtn.addEventListener('click', submitTurn);
@@ -1036,6 +1051,10 @@
         showNotice('Start the game first.', 'error');
         return;
       }
+      if (state.turnBuilder.isStanding) {
+        showNotice('You have chosen to Stand. Submit turn or undo/clear to reset.', 'error');
+        return;
+      }
       state.turnBuilder.selectedBase = val;
       updateTurnUI();
     }
@@ -1044,7 +1063,9 @@
       const turn = state.turnBuilder;
       const dartIndex = turn.darts.length + 1;
 
-      if (dartIndex <= 3) {
+      if (turn.isStanding) {
+        els.dartStageLabel.textContent = `Standing (${turn.darts.length} Dart${turn.darts.length > 1 ? 's' : ''})`;
+      } else if (dartIndex <= 3) {
         els.dartStageLabel.textContent = `Dart ${dartIndex} of 3`;
       } else {
         els.dartStageLabel.textContent = `Turn Ready`;
@@ -1084,9 +1105,12 @@
       const currentRunning = turn.darts.reduce((sum, d) => sum + d.value, 0);
       els.runningTotalLabel.textContent = currentRunning;
 
-      // Lock buttons if turn is complete (3 darts locked)
-      const isComplete = turn.darts.length >= 3;
+      // Lock button state
+      const isComplete = turn.darts.length >= 3 || turn.isStanding;
       els.lockDartBtn.disabled = isComplete;
+
+      // Stand button requires at least 1 locked dart
+      els.standBtn.disabled = turn.darts.length < 1 || turn.isStanding || turn.darts.length >= 3;
     }
 
     function formatDartDisplay(dart) {
@@ -1097,6 +1121,11 @@
 
     function lockCurrentDart() {
       if (!state.started) return;
+
+      if (state.turnBuilder.isStanding) {
+        showNotice('You have chosen to Stand. Submit turn or undo/clear.', 'error');
+        return;
+      }
 
       if (state.turnBuilder.darts.length >= 3) {
         showNotice('All 3 darts are locked. Submit the turn.', 'error');
@@ -1109,7 +1138,7 @@
         return;
       }
 
-      // Check Number Lock Rule (Opponents cannot hit same base number in same round)
+      // Check Number Lock Rule
       if (base !== 'MISS') {
         const lockKey = String(base);
         if (state.roundLockedNumbers.has(lockKey)) {
@@ -1127,12 +1156,10 @@
 
       state.turnBuilder.darts.push(dartObj);
 
-      // Lock base number for opponents if it's not a Miss
       if (base !== 'MISS') {
         state.roundLockedNumbers.add(String(base));
       }
 
-      // Check immediate bust on running total
       const runningTotal = state.turnBuilder.darts.reduce((sum, d) => sum + d.value, 0);
 
       state.turnBuilder.selectedBase = null;
@@ -1147,6 +1174,21 @@
       }
     }
 
+    function standTurn() {
+      if (!state.started) return;
+
+      if (state.turnBuilder.darts.length < 1) {
+        showNotice('At least 1 dart must be thrown before you can Stand.', 'error');
+        return;
+      }
+
+      state.turnBuilder.isStanding = true;
+      state.turnBuilder.selectedBase = null;
+
+      updateTurnUI();
+      showNotice(`Standing on ${state.turnBuilder.darts.length} dart(s) with total ${els.runningTotalLabel.textContent}. Ready to submit turn.`, 'success');
+    }
+
     function undoLastDart() {
       if (!state.started) return;
       if (state.turnBuilder.darts.length === 0) {
@@ -1155,8 +1197,8 @@
       }
 
       const removed = state.turnBuilder.darts.pop();
+      state.turnBuilder.isStanding = false;
 
-      // Recalculate round locked numbers cleanly from scratch
       rebuildRoundLockedNumbers();
 
       state.turnBuilder.selectedBase = null;
@@ -1168,7 +1210,6 @@
     function rebuildRoundLockedNumbers() {
       state.roundLockedNumbers.clear();
 
-      // Lock numbers from finished turns this round
       state.players.forEach(p => {
         const rData = p.rounds[state.round - 1];
         if (rData && rData.submitted) {
@@ -1180,7 +1221,6 @@
         }
       });
 
-      // Lock numbers from active turn
       state.turnBuilder.darts.forEach(d => {
         if (d.base !== 'MISS') {
           state.roundLockedNumbers.add(String(d.base));
@@ -1192,6 +1232,7 @@
       if (!state.started) return;
       state.turnBuilder.darts = [];
       state.turnBuilder.selectedBase = null;
+      state.turnBuilder.isStanding = false;
       rebuildRoundLockedNumbers();
       updateTurnUI();
       renderLockedNumbers();
@@ -1204,8 +1245,15 @@
       const player = getCurrentPlayer();
       if (!player) return;
 
-      if (state.turnBuilder.darts.length < 3) {
-        showNotice('Please lock all 3 darts before submitting.', 'error');
+      const numDarts = state.turnBuilder.darts.length;
+
+      if (numDarts < 3 && !state.turnBuilder.isStanding) {
+        showNotice('Lock 3 darts or press Stand (after at least 1 throw) to submit.', 'error');
+        return;
+      }
+
+      if (numDarts === 0) {
+        showNotice('At least 1 dart must be thrown before submitting.', 'error');
         return;
       }
 
@@ -1214,7 +1262,6 @@
       const isBust = sum > 21;
       const roundScore = isBust ? 0 : sum;
 
-      // Record player round
       player.rounds[state.round - 1] = {
         darts: dartsCopy,
         sum: sum,
@@ -1228,14 +1275,13 @@
       const dartStr = dartsCopy.map(d => formatDartDisplay(d)).join(', ');
       addLog(`Round ${state.round} - <strong>${escapeHtml(player.name)}</strong> scored [${dartStr}] -> ${isBust ? 'BUST (0)' : sum + ' pts'}`);
 
-      // Clear builder state
       state.turnBuilder.darts = [];
       state.turnBuilder.selectedBase = null;
+      state.turnBuilder.isStanding = false;
 
       state.currentTurnIndex++;
 
       if (state.currentTurnIndex >= state.roundOrder.length) {
-        // Round complete -> resolve house scoring and rotators
         evaluateRoundEnd();
       } else {
         updateCurrentTurnDisplay();
@@ -1265,7 +1311,6 @@
           pRound.result = 'Win';
           pRound.roundPoints = 1;
         } else {
-          // Both non-bust
           if (pRound.sum > houseRoundData.sum) {
             pRound.result = 'Win';
             pRound.roundPoints = 1;
@@ -1279,7 +1324,6 @@
         }
       });
 
-      // Evaluate House overall round result
       let houseWins = 0;
       let houseTies = 0;
       let houseLosses = 0;
@@ -1302,7 +1346,6 @@
         houseRoundData.roundPoints = 0;
       }
 
-      // Re-calculate total scores
       state.players.forEach(p => {
         p.totalScore = p.rounds.reduce((acc, r) => acc + (r ? r.roundPoints : 0), 0);
       });
@@ -1415,7 +1458,7 @@
       state.players = [];
       state.roundLockedNumbers.clear();
       state.logs = [];
-      state.turnBuilder = { darts: [], selectedBase: null };
+      state.turnBuilder = { darts: [], selectedBase: null, isStanding: false };
 
       els.topStatus.textContent = 'Set up players to begin';
       els.roundDisplay.textContent = 'Round 0 / 8';
