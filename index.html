@@ -725,7 +725,7 @@
         <div class="rules-strip">
           <div class="rule-pill">Direct Button Scoring</div>
           <div class="rule-pill">Bust if round total exceeds 21</div>
-          <div class="rule-pill">House: 3 pts if wins, 1 pt if ties</div>
+          <div class="rule-pill">Win vs House: 3 pts | Tie: 1 pt</div>
         </div>
       </article>
 
@@ -1303,23 +1303,23 @@
 
         if (pRound.isBust && houseRoundData.isBust) {
           pRound.result = 'Tie';
-          pRound.roundPoints = 0;
+          pRound.roundPoints = 1;
         } else if (pRound.isBust && !houseRoundData.isBust) {
           pRound.result = 'Lose';
           pRound.roundPoints = 0;
         } else if (!pRound.isBust && houseRoundData.isBust) {
           pRound.result = 'Win';
-          pRound.roundPoints = 1;
+          pRound.roundPoints = 3;
         } else {
           if (pRound.sum > houseRoundData.sum) {
             pRound.result = 'Win';
-            pRound.roundPoints = 1;
+            pRound.roundPoints = 3;
           } else if (pRound.sum < houseRoundData.sum) {
             pRound.result = 'Lose';
             pRound.roundPoints = 0;
           } else {
             pRound.result = 'Tie';
-            pRound.roundPoints = 0;
+            pRound.roundPoints = 1;
           }
         }
       });
@@ -1524,9 +1524,9 @@
             roundScoreText = `${rData.sum}`;
           }
 
-          if (rData.result === 'Win') resultHtml = '<span class="result-tag win">Win (+1)</span>';
+          if (rData.result === 'Win') resultHtml = '<span class="result-tag win">Win (+3)</span>';
           else if (rData.result === 'Lose') resultHtml = '<span class="result-tag lose">Lose</span>';
-          else if (rData.result === 'Tie') resultHtml = '<span class="result-tag tie">Tie</span>';
+          else if (rData.result === 'Tie') resultHtml = '<span class="result-tag tie">Tie (+1)</span>';
 
           if (p.isHouse && rData.result !== 'Pending') {
             if (rData.result === 'Win') resultHtml = '<span class="result-tag win">Win (+3)</span>';
