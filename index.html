@@ -874,729 +874,552 @@
   </div>
 
   <script>
-    const MAX_ROUNDS = 8;
+  const MAX_ROUNDS = 8;
 
-    function escapeHtml(text) {
-      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-      return text.replace(/[&<>"']/g, m => map[m]);
+  function escapeHtml(text) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.replace(/[&<>"']/g, m => map[m]);
+  }
+
+  const state = {
+    players: [],
+    started: false,
+    round: 0,
+    currentTurnIndex: 0,
+    roundOrder: [],
+    roundLockedNumbers: new Set(),
+    logs: [],
+    turnBuilder: {
+      darts: [],
+      selectedBase: null,
+      isStanding: false
+    }
+  };
+
+  const els = {
+    playerInputs: document.getElementById('playerInputs'),
+    addPlayerBtn: document.getElementById('addPlayerBtn'),
+    startGameBtn: document.getElementById('startGameBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    scoreboardBody: document.getElementById('scoreboardBody'),
+    roundDisplay: document.getElementById('roundDisplay'),
+    orderDisplay: document.getElementById('orderDisplay'),
+    currentPlayerLabel: document.getElementById('currentPlayerLabel'),
+    currentRoleLabel: document.getElementById('currentRoleLabel'),
+    currentRoundLabel: document.getElementById('currentRoundLabel'),
+    runningTotalLabel: document.getElementById('runningTotalLabel'),
+    notice: document.getElementById('notice'),
+    numbersLock: document.getElementById('numbersLock'),
+    logList: document.getElementById('logList'),
+    topStatus: document.getElementById('topStatus'),
+    finalPanel: document.getElementById('finalPanel'),
+    finalList: document.getElementById('finalList'),
+    scoreButtonsRow1: document.getElementById('scoreButtonsRow1'),
+    scoreButtonsRow2: document.getElementById('scoreButtonsRow2'),
+    scoreButtonsRow3: document.getElementById('scoreButtonsRow3'),
+    scoreButtonsRow4: document.getElementById('scoreButtonsRow4'),
+    previewBase: document.getElementById('previewBase'),
+    previewValue: document.getElementById('previewValue'),
+    dartStageLabel: document.getElementById('dartStageLabel'),
+    dartHistory1: document.getElementById('dartHistory1'),
+    dartHistory2: document.getElementById('dartHistory2'),
+    dartHistory3: document.getElementById('dartHistory3'),
+    lockDartBtn: document.getElementById('lockDartBtn'),
+    standBtn: document.getElementById('standBtn'),
+    undoDartBtn: document.getElementById('undoDartBtn'),
+    clearTurnBtn: document.getElementById('clearTurnBtn'),
+    submitTurnBtn: document.getElementById('submitTurnBtn')
+  };
+
+  function syncGameToHellcastle(gameName, resultSummary) {
+    const payload = {
+      date: new Date().toISOString().split('T')[0],
+      game: gameName,
+      summary: resultSummary
+    };
+    fetch("https://script.google.com/macros/s/AKfycby30NBO4KCHCo6EtGB-wYB8diDF2xtQQuatCJOUWrEab-sSE08EhflxTebKzVYuEg8fCQ/exec", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => console.log("Hellcastle sync response:", data))
+    .catch(err => console.error("Hellcastle sync error:", err));
+  }
+
+  function init() {
+    setupInitialPlayerInputs();
+    buildButtonBank();
+    attachEventListeners();
+    resetGame();
+    initRevealAnimation();
+  }
+
+  // --- INITIALIZATION FIX: Blanks out initial inputs ---
+  function setupInitialPlayerInputs() {
+    els.playerInputs.innerHTML = '';
+    createPlayerInput('');
+    createPlayerInput('');
+  }
+
+  function createPlayerInput(defaultName = '') {
+    const count = els.playerInputs.querySelectorAll('.input-row').length;
+    if (count >= 6) {
+      showNotice('Maximum 6 players allowed.', 'error');
+      return;
+    }
+    const row = document.createElement('div');
+    row.className = 'input-row';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `Player ${count + 1} Name`;
+    input.value = defaultName;
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'tiny-btn';
+    removeBtn.textContent = '✕';
+    removeBtn.title = 'Remove Player';
+    removeBtn.addEventListener('click', () => {
+      if (els.playerInputs.querySelectorAll('.input-row').length <= 2) {
+        showNotice('At least 2 players are required.', 'error');
+        return;
+      }
+      row.remove();
+      updatePlayerInputPlaceholders();
+    });
+
+    row.appendChild(input);
+    row.appendChild(removeBtn);
+    els.playerInputs.appendChild(row);
+  }
+
+  function updatePlayerInputPlaceholders() {
+    const rows = els.playerInputs.querySelectorAll('.input-row input');
+    rows.forEach((inp, i) => {
+      inp.placeholder = `Player ${i + 1} Name`;
+    });
+  }
+
+  function buildButtonBank() {
+    const rows = [
+      [1, 2, 3, 4, 5, 6],
+      [7, 8, 9, 10, 11, 12],
+      [13, 14, 15, 16, 17, 18],
+      [19, 20, 21, 'MISS']
+    ];
+    const rowEls = [
+      els.scoreButtonsRow1,
+      els.scoreButtonsRow2,
+      els.scoreButtonsRow3,
+      els.scoreButtonsRow4
+    ];
+
+    rowEls.forEach((rowEl, idx) => {
+      rowEl.innerHTML = '';
+      rows[idx].forEach(val => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `score-btn ${val === 'MISS' ? 'miss' : ''}`;
+        btn.textContent = val === 'MISS' ? 'Miss' : val;
+        btn.addEventListener('click', () => {
+          selectScore(val);
+        });
+        rowEl.appendChild(btn);
+      });
+    });
+  }
+
+  function attachEventListeners() {
+    els.addPlayerBtn.addEventListener('click', () => createPlayerInput());
+    els.startGameBtn.addEventListener('click', startGame);
+    els.resetBtn.addEventListener('click', resetGame);
+    els.lockDartBtn.addEventListener('click', lockCurrentDart);
+    els.standBtn.addEventListener('click', handleStand);
+    els.undoDartBtn.addEventListener('click', undoLastDart);
+    els.clearTurnBtn.addEventListener('click', clearCurrentTurn);
+    els.submitTurnBtn.addEventListener('click', submitTurn);
+  }
+
+  // --- GAME START FIX: Captures ONLY user-entered inputs ---
+  function startGame() {
+    const inputElements = els.playerInputs.querySelectorAll('.input-row input');
+    const playerNames = [];
+
+    inputElements.forEach((inp, idx) => {
+      const trimmed = inp.value.trim();
+      if (trimmed !== '') {
+        playerNames.push(trimmed);
+      } else {
+        playerNames.push(`Player ${idx + 1}`);
+      }
+    });
+
+    if (playerNames.length < 2) {
+      showNotice('At least 2 players are required to start.', 'error');
+      return;
     }
 
-    const state = {
-      players: [],
-      started: false,
-      round: 0,
-      currentTurnIndex: 0,
-      roundOrder: [],
-      roundLockedNumbers: new Set(),
-      logs: [],
-      turnBuilder: {
+    state.players = playerNames.map(name => ({
+      name,
+      overallScore: 0,
+      rounds: Array.from({ length: MAX_ROUNDS }, () => ({
         darts: [],
-        selectedBase: null,
-        isStanding: false
-      }
+        score: 0,
+        busted: false,
+        result: 'pending'
+      }))
+    }));
+
+    state.started = true;
+    state.round = 1;
+    state.logs = [];
+    els.finalPanel.style.display = 'none';
+
+    startRound(1);
+    showNotice('Game started! Enter Dart 1 score.', 'success');
+  }
+
+  function resetGame() {
+    state.started = false;
+    state.round = 0;
+    state.players = [];
+    state.currentTurnIndex = 0;
+    state.roundOrder = [];
+    state.roundLockedNumbers.clear();
+    state.logs = [];
+
+    setupInitialPlayerInputs();
+    resetTurnBuilder();
+    renderScoreboard();
+    renderLocks();
+    renderLogs();
+
+    els.topStatus.textContent = 'Set up players to begin';
+    els.roundDisplay.textContent = 'Round 0 / 8';
+    els.orderDisplay.textContent = 'Waiting to start';
+    els.currentPlayerLabel.textContent = '—';
+    els.currentRoleLabel.textContent = '—';
+    els.currentRoundLabel.textContent = '—';
+    els.runningTotalLabel.textContent = '0';
+    els.finalPanel.style.display = 'none';
+
+    showNotice('Game reset. Set up players to begin.', 'notice');
+  }
+
+  function startRound(roundNum) {
+    state.round = roundNum;
+    state.roundLockedNumbers.clear();
+
+    const count = state.players.length;
+    const houseIndex = count - 1;
+    const basePlayerIndices = Array.from({ length: houseIndex }, (_, i) => i);
+
+    const shift = (roundNum - 1) % houseIndex;
+    const rotated = basePlayerIndices.slice(shift).concat(basePlayerIndices.slice(0, shift));
+    rotated.push(houseIndex);
+
+    state.roundOrder = rotated;
+    state.currentTurnIndex = 0;
+
+    updateTurnDisplay();
+    renderScoreboard();
+    renderLocks();
+  }
+
+  function getCurrentPlayerIndex() {
+    return state.roundOrder[state.currentTurnIndex];
+  }
+
+  function updateTurnDisplay() {
+    if (!state.started) return;
+
+    const pIdx = getCurrentPlayerIndex();
+    const player = state.players[pIdx];
+    const isHouse = pIdx === state.players.length - 1;
+
+    els.roundDisplay.textContent = `Round ${state.round} / ${MAX_ROUNDS}`;
+    els.orderDisplay.textContent = `${player.name}'s Turn`;
+    els.topStatus.textContent = `Round ${state.round} · ${player.name} Throwing`;
+
+    els.currentPlayerLabel.textContent = player.name;
+    els.currentRoleLabel.textContent = isHouse ? 'House' : 'Player';
+    els.currentRoundLabel.textContent = `${state.round} / ${MAX_ROUNDS}`;
+
+    resetTurnBuilder();
+  }
+
+  function resetTurnBuilder() {
+    state.turnBuilder = {
+      darts: [],
+      selectedBase: null,
+      isStanding: false
     };
+    updateTurnBuilderUI();
+  }
 
-    const els = {
-      playerInputs: document.getElementById('playerInputs'),
-      addPlayerBtn: document.getElementById('addPlayerBtn'),
-      startGameBtn: document.getElementById('startGameBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      scoreboardBody: document.getElementById('scoreboardBody'),
-      roundDisplay: document.getElementById('roundDisplay'),
-      orderDisplay: document.getElementById('orderDisplay'),
-      currentPlayerLabel: document.getElementById('currentPlayerLabel'),
-      currentRoleLabel: document.getElementById('currentRoleLabel'),
-      currentRoundLabel: document.getElementById('currentRoundLabel'),
-      runningTotalLabel: document.getElementById('runningTotalLabel'),
-      notice: document.getElementById('notice'),
-      numbersLock: document.getElementById('numbersLock'),
-      logList: document.getElementById('logList'),
-      topStatus: document.getElementById('topStatus'),
-      finalPanel: document.getElementById('finalPanel'),
-      finalList: document.getElementById('finalList'),
-      scoreButtonsRow1: document.getElementById('scoreButtonsRow1'),
-      scoreButtonsRow2: document.getElementById('scoreButtonsRow2'),
-      scoreButtonsRow3: document.getElementById('scoreButtonsRow3'),
-      scoreButtonsRow4: document.getElementById('scoreButtonsRow4'),
-      previewBase: document.getElementById('previewBase'),
-      previewValue: document.getElementById('previewValue'),
-      dartStageLabel: document.getElementById('dartStageLabel'),
-      dartHistory1: document.getElementById('dartHistory1'),
-      dartHistory2: document.getElementById('dartHistory2'),
-      dartHistory3: document.getElementById('dartHistory3'),
-      lockDartBtn: document.getElementById('lockDartBtn'),
-      standBtn: document.getElementById('standBtn'),
-      undoDartBtn: document.getElementById('undoDartBtn'),
-      clearTurnBtn: document.getElementById('clearTurnBtn'),
-      submitTurnBtn: document.getElementById('submitTurnBtn')
-    };
+  function selectScore(val) {
+    if (!state.started) return;
+    if (state.turnBuilder.darts.length >= 3 || state.turnBuilder.isStanding) return;
 
-    function syncGameToHellcastle(gameName, resultSummary) {
-      const payload = {
-        date: new Date().toISOString().split('T')[0],
-        game: gameName,
-        summary: resultSummary
-      };
-
-      fetch("https://script.google.com/macros/s/AKfycby30NBO4KCHCo6EtGB-wYB8diDF2xtQQuatCJOUWrEab-sSE08EhflxTebKzVYuEg8fCQ/exec", {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => console.log("Hellcastle sync response:", data))
-      .catch(err => console.error("Hellcastle sync error:", err));
-    }
-
-    function init() {
-      setupInitialPlayerInputs();
-      buildButtonBank();
-      attachEventListeners();
-      resetGame();
-      initRevealAnimation();
-    }
-
-    function setupInitialPlayerInputs() {
-      els.playerInputs.innerHTML = '';
-      createPlayerInput('Kelly');
-      createPlayerInput('Pope');
-    }
-
-    function createPlayerInput(defaultName = '') {
-      const count = els.playerInputs.querySelectorAll('.input-row').length;
-      if (count >= 6) {
-        showNotice('Maximum 6 players allowed.', 'error');
+    if (val !== 'MISS') {
+      if (state.roundLockedNumbers.has(val)) {
+        showNotice(`Number ${val} is locked by another player this round!`, 'error');
         return;
       }
+    }
 
+    state.turnBuilder.selectedBase = val;
+    updateTurnBuilderUI();
+  }
+
+  function lockCurrentDart() {
+    if (!state.started) return;
+    if (state.turnBuilder.darts.length >= 3 || state.turnBuilder.isStanding) {
+      showNotice('Turn already completed or standing.', 'error');
+      return;
+    }
+
+    const sel = state.turnBuilder.selectedBase;
+    if (sel === null) {
+      showNotice('Please select a score or Miss first.', 'error');
+      return;
+    }
+
+    state.turnBuilder.darts.push(sel);
+    if (sel !== 'MISS') {
+      state.roundLockedNumbers.add(sel);
+    }
+
+    state.turnBuilder.selectedBase = null;
+    updateTurnBuilderUI();
+    renderLocks();
+
+    const currentTotal = computeDartsTotal(state.turnBuilder.darts);
+    if (currentTotal > 21) {
+      showNotice('BUST! Round total exceeded 21.', 'bust-flash');
+    }
+  }
+
+  function handleStand() {
+    if (!state.started) return;
+    state.turnBuilder.isStanding = true;
+    updateTurnBuilderUI();
+    showNotice('Standing. Submit turn when ready.', 'success');
+  }
+
+  function undoLastDart() {
+    if (!state.started) return;
+    if (state.turnBuilder.darts.length === 0) return;
+
+    const removed = state.turnBuilder.darts.pop();
+    if (removed !== 'MISS') {
+      state.roundLockedNumbers.delete(removed);
+    }
+    state.turnBuilder.isStanding = false;
+    updateTurnBuilderUI();
+    renderLocks();
+  }
+
+  function clearCurrentTurn() {
+    if (!state.started) return;
+    state.turnBuilder.darts.forEach(val => {
+      if (val !== 'MISS') state.roundLockedNumbers.delete(val);
+    });
+    resetTurnBuilder();
+    renderLocks();
+  }
+
+  function computeDartsTotal(darts) {
+    return darts.reduce((acc, d) => acc + (d === 'MISS' ? 0 : d), 0);
+  }
+
+  function updateTurnBuilderUI() {
+    const darts = state.turnBuilder.darts;
+    const dartCount = darts.length;
+
+    els.dartStageLabel.textContent = `Dart ${Math.min(dartCount + 1, 3)} of 3`;
+
+    const sel = state.turnBuilder.selectedBase;
+    els.previewBase.textContent = `Base: ${sel !== null ? sel : '—'}`;
+    els.previewValue.textContent = `Value: ${sel !== null ? (sel === 'MISS' ? 0 : sel) : '—'}`;
+
+    els.dartHistory1.textContent = darts[0] !== undefined ? darts[0] : '—';
+    els.dartHistory2.textContent = darts[1] !== undefined ? darts[1] : '—';
+    els.dartHistory3.textContent = darts[2] !== undefined ? darts[2] : '—';
+
+    const currentSum = computeDartsTotal(darts);
+    els.runningTotalLabel.textContent = currentSum.toString();
+
+    const scoreBtns = document.querySelectorAll('.button-bank .score-btn');
+    scoreBtns.forEach(btn => {
+      const text = btn.textContent;
+      const val = text === 'Miss' ? 'MISS' : parseInt(text, 10);
+      btn.classList.toggle('selected', state.turnBuilder.selectedBase === val);
+    });
+  }
+
+  function submitTurn() {
+    if (!state.started) return;
+
+    const pIdx = getCurrentPlayerIndex();
+    const player = state.players[pIdx];
+    const darts = [...state.turnBuilder.darts];
+    const sum = computeDartsTotal(darts);
+    const isBust = sum > 21;
+
+    const roundData = player.rounds[state.round - 1];
+    roundData.darts = darts;
+    roundData.score = isBust ? 0 : sum;
+    roundData.busted = isBust;
+
+    state.currentTurnIndex++;
+
+    if (state.currentTurnIndex >= state.roundOrder.length) {
+      evaluateRoundResults();
+      renderScoreboard();
+      renderLogs();
+
+      if (state.round < MAX_ROUNDS) {
+        startRound(state.round + 1);
+      } else {
+        finishGame();
+      }
+    } else {
+      updateTurnDisplay();
+      renderScoreboard();
+    }
+  }
+
+  function evaluateRoundResults() {
+    const houseIdx = state.players.length - 1;
+    const house = state.players[houseIdx];
+    const houseRound = house.rounds[state.round - 1];
+    const houseScore = houseRound.score;
+    const houseBust = houseRound.busted;
+
+    state.players.forEach((p, idx) => {
+      if (idx === houseIdx) return;
+      const r = p.rounds[state.round - 1];
+
+      if (r.busted) {
+        r.result = 'lose';
+      } else if (houseBust) {
+        r.result = 'win';
+        p.overallScore += 3;
+      } else if (r.score > houseScore) {
+        r.result = 'win';
+        p.overallScore += 3;
+      } else if (r.score < houseScore) {
+        r.result = 'lose';
+      } else {
+        r.result = 'tie';
+        p.overallScore += 1;
+      }
+    });
+
+    houseRound.result = 'pending';
+
+    const logEntry = `<strong>Round ${state.round}:</strong> House scored ${houseBust ? 'BUST (0)' : houseScore}.`;
+    state.logs.unshift(logEntry);
+  }
+
+  function finishGame() {
+    state.started = false;
+    els.topStatus.textContent = 'Game Complete';
+    showNotice('Game complete! Check final standings below.', 'success');
+
+    const sorted = [...state.players].sort((a, b) => b.overallScore - a.overallScore);
+    els.finalList.innerHTML = '';
+
+    sorted.forEach((p, i) => {
       const row = document.createElement('div');
-      row.className = 'input-row';
-
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = `Player ${count + 1} Name`;
-      input.value = defaultName;
-
-      const removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'tiny-btn';
-      removeBtn.textContent = '✕';
-      removeBtn.title = 'Remove Player';
-      removeBtn.addEventListener('click', () => {
-        if (els.playerInputs.querySelectorAll('.input-row').length <= 2) {
-          showNotice('At least 2 players are required.', 'error');
-          return;
-        }
-        row.remove();
-        updatePlayerInputPlaceholders();
-      });
-
-      row.appendChild(input);
-      row.appendChild(removeBtn);
-      els.playerInputs.appendChild(row);
-    }
-
-    function updatePlayerInputPlaceholders() {
-      const rows = els.playerInputs.querySelectorAll('.input-row input');
-      rows.forEach((inp, i) => {
-        inp.placeholder = `Player ${i + 1} Name`;
-      });
-    }
-
-    function buildButtonBank() {
-      const rows = [
-        [1, 2, 3, 4, 5, 6],
-        [7, 8, 9, 10, 11, 12],
-        [13, 14, 15, 16, 17, 18],
-        [19, 20, 21, 'MISS']
-      ];
-
-      const rowEls = [
-        els.scoreButtonsRow1,
-        els.scoreButtonsRow2,
-        els.scoreButtonsRow3,
-        els.scoreButtonsRow4
-      ];
-
-      rowEls.forEach((rowEl, idx) => {
-        rowEl.innerHTML = '';
-        rows[idx].forEach(val => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = `score-btn ${val === 'MISS' ? 'miss' : ''}`;
-          btn.textContent = val === 'MISS' ? 'Miss' : val;
-
-          btn.addEventListener('click', () => {
-            selectScore(val);
-          });
-          rowEl.appendChild(btn);
-        });
-      });
-    }
-
-    function attachEventListeners() {
-      els.addPlayerBtn.addEventListener('click', () => createPlayerInput());
-      els.startGameBtn.addEventListener('click', startGame);
-      els.resetBtn.addEventListener('click', resetGame);
-
-      els.lockDartBtn.addEventListener('click', lockCurrentDart);
-      els.standBtn.addEventListener('click', standTurn);
-      els.undoDartBtn.addEventListener('click', undoLastDart);
-      els.clearTurnBtn.addEventListener('click', clearTurnBuilder);
-      els.submitTurnBtn.addEventListener('click', submitTurn);
-    }
-
-    function selectScore(val) {
-      if (!state.started) {
-        showNotice('Start the game first.', 'error');
-        return;
-      }
-      if (state.turnBuilder.isStanding) {
-        showNotice('You have chosen to Stand. Submit turn or undo/clear to reset.', 'error');
-        return;
-      }
-      state.turnBuilder.selectedBase = val;
-      updateTurnUI();
-    }
-
-    function updateTurnUI() {
-      const turn = state.turnBuilder;
-      const dartIndex = turn.darts.length + 1;
-
-      if (turn.isStanding) {
-        els.dartStageLabel.textContent = `Standing (${turn.darts.length} Dart${turn.darts.length > 1 ? 's' : ''})`;
-      } else if (dartIndex <= 3) {
-        els.dartStageLabel.textContent = `Dart ${dartIndex} of 3`;
-      } else {
-        els.dartStageLabel.textContent = `Turn Ready`;
-      }
-
-      const base = turn.selectedBase;
-      if (base === null) {
-        els.previewBase.textContent = 'Base: —';
-        els.previewValue.textContent = 'Value: —';
-      } else if (base === 'MISS') {
-        els.previewBase.textContent = 'Base: Miss';
-        els.previewValue.textContent = 'Value: 0';
-      } else {
-        els.previewBase.textContent = `Base: ${base}`;
-        els.previewValue.textContent = `Value: ${base}`;
-      }
-
-      // Highlight base buttons
-      document.querySelectorAll('.score-btn').forEach(btn => {
-        const text = btn.textContent;
-        const matched = (base === 'MISS' && text === 'Miss') || String(base) === text;
-        btn.classList.toggle('selected', matched);
-      });
-
-      // Update dart histories
-      [1, 2, 3].forEach(i => {
-        const historyEl = els[`dartHistory${i}`];
-        const dart = turn.darts[i - 1];
-        if (dart) {
-          historyEl.textContent = formatDartDisplay(dart);
-        } else {
-          historyEl.textContent = '—';
-        }
-      });
-
-      // Update running total preview
-      const currentRunning = turn.darts.reduce((sum, d) => sum + d.value, 0);
-      els.runningTotalLabel.textContent = currentRunning;
-
-      // Lock button state
-      const isComplete = turn.darts.length >= 3 || turn.isStanding;
-      els.lockDartBtn.disabled = isComplete;
-
-      // Stand button requires at least 1 locked dart
-      els.standBtn.disabled = turn.darts.length < 1 || turn.isStanding || turn.darts.length >= 3;
-    }
-
-    function formatDartDisplay(dart) {
-      if (!dart) return '—';
-      if (dart.base === 'MISS') return 'Miss (0)';
-      return `${dart.value}`;
-    }
-
-    function lockCurrentDart() {
-      if (!state.started) return;
-
-      if (state.turnBuilder.isStanding) {
-        showNotice('You have chosen to Stand. Submit turn or undo/clear.', 'error');
-        return;
-      }
-
-      if (state.turnBuilder.darts.length >= 3) {
-        showNotice('All 3 darts are locked. Submit the turn.', 'error');
-        return;
-      }
-
-      const base = state.turnBuilder.selectedBase;
-      if (base === null) {
-        showNotice('Please select a score or Miss before locking.', 'error');
-        return;
-      }
-
-      // Check Number Lock Rule
-      if (base !== 'MISS') {
-        const lockKey = String(base);
-        if (state.roundLockedNumbers.has(lockKey)) {
-          showNotice(`Number ${base} is already locked this round! Pick another number or Miss.`, 'error');
-          return;
-        }
-      }
-
-      const value = base === 'MISS' ? 0 : Number(base);
-
-      const dartObj = {
-        base: base,
-        value: value
-      };
-
-      state.turnBuilder.darts.push(dartObj);
-
-      if (base !== 'MISS') {
-        state.roundLockedNumbers.add(String(base));
-      }
-
-      const runningTotal = state.turnBuilder.darts.reduce((sum, d) => sum + d.value, 0);
-
-      state.turnBuilder.selectedBase = null;
-
-      updateTurnUI();
-      renderLockedNumbers();
-
-      if (runningTotal > 21) {
-        showNotice(`BUST! Running total reached ${runningTotal} (> 21). Submit turn when ready.`, 'bust-flash');
-      } else {
-        showNotice(`Dart ${state.turnBuilder.darts.length} locked: ${formatDartDisplay(dartObj)}.`, 'success');
-      }
-    }
-
-    function standTurn() {
-      if (!state.started) return;
-
-      if (state.turnBuilder.darts.length < 1) {
-        showNotice('At least 1 dart must be thrown before you can Stand.', 'error');
-        return;
-      }
-
-      state.turnBuilder.isStanding = true;
-      state.turnBuilder.selectedBase = null;
-
-      updateTurnUI();
-      showNotice(`Standing on ${state.turnBuilder.darts.length} dart(s) with total ${els.runningTotalLabel.textContent}. Ready to submit turn.`, 'success');
-    }
-
-    function undoLastDart() {
-      if (!state.started) return;
-      if (state.turnBuilder.darts.length === 0) {
-        showNotice('No darts to undo.', 'error');
-        return;
-      }
-
-      const removed = state.turnBuilder.darts.pop();
-      state.turnBuilder.isStanding = false;
-
-      rebuildRoundLockedNumbers();
-
-      state.turnBuilder.selectedBase = null;
-      updateTurnUI();
-      renderLockedNumbers();
-      showNotice(`Undid last dart (${formatDartDisplay(removed)}).`, 'success');
-    }
-
-    function rebuildRoundLockedNumbers() {
-      state.roundLockedNumbers.clear();
-
-      state.players.forEach(p => {
-        const rData = p.rounds[state.round - 1];
-        if (rData && rData.submitted) {
-          rData.darts.forEach(d => {
-            if (d.base !== 'MISS') {
-              state.roundLockedNumbers.add(String(d.base));
-            }
-          });
-        }
-      });
-
-      state.turnBuilder.darts.forEach(d => {
-        if (d.base !== 'MISS') {
-          state.roundLockedNumbers.add(String(d.base));
-        }
-      });
-    }
-
-    function clearTurnBuilder() {
-      if (!state.started) return;
-      state.turnBuilder.darts = [];
-      state.turnBuilder.selectedBase = null;
-      state.turnBuilder.isStanding = false;
-      rebuildRoundLockedNumbers();
-      updateTurnUI();
-      renderLockedNumbers();
-      showNotice('Turn cleared.', 'success');
-    }
-
-    function submitTurn() {
-      if (!state.started) return;
-
-      const player = getCurrentPlayer();
-      if (!player) return;
-
-      const numDarts = state.turnBuilder.darts.length;
-
-      if (numDarts < 3 && !state.turnBuilder.isStanding) {
-        showNotice('Lock 3 darts or press Stand (after at least 1 throw) to submit.', 'error');
-        return;
-      }
-
-      if (numDarts === 0) {
-        showNotice('At least 1 dart must be thrown before submitting.', 'error');
-        return;
-      }
-
-      const dartsCopy = [...state.turnBuilder.darts];
-      const sum = dartsCopy.reduce((acc, d) => acc + d.value, 0);
-      const isBust = sum > 21;
-      const roundScore = isBust ? 0 : sum;
-
-      player.rounds[state.round - 1] = {
-        darts: dartsCopy,
-        sum: sum,
-        isBust: isBust,
-        roundScore: roundScore,
-        submitted: true,
-        roundPoints: 0,
-        result: 'Pending'
-      };
-
-      const dartStr = dartsCopy.map(d => formatDartDisplay(d)).join(', ');
-      addLog(`Round ${state.round} - <strong>${escapeHtml(player.name)}</strong> scored [${dartStr}] -> ${isBust ? 'BUST (0)' : sum + ' pts'}`);
-
-      state.turnBuilder.darts = [];
-      state.turnBuilder.selectedBase = null;
-      state.turnBuilder.isStanding = false;
-
-      state.currentTurnIndex++;
-
-      if (state.currentTurnIndex >= state.roundOrder.length) {
-        evaluateRoundEnd();
-      } else {
-        updateCurrentTurnDisplay();
-        renderScoreboard();
-        updateTurnUI();
-        showNotice(`Turn submitted for ${player.name}. Next up: ${getCurrentPlayer().name}.`, 'success');
-      }
-    }
-
-    function evaluateRoundEnd() {
-      const currentRoundIdx = state.round - 1;
-      const housePlayer = state.players.find(p => p.isHouse);
-      const houseRoundData = housePlayer.rounds[currentRoundIdx];
-
-      const nonHousePlayers = state.players.filter(p => !p.isHouse);
-
-      nonHousePlayers.forEach(p => {
-        const pRound = p.rounds[currentRoundIdx];
-
-        if (pRound.isBust && houseRoundData.isBust) {
-          pRound.result = 'Tie';
-          pRound.roundPoints = 1;
-        } else if (pRound.isBust && !houseRoundData.isBust) {
-          pRound.result = 'Lose';
-          pRound.roundPoints = 0;
-        } else if (!pRound.isBust && houseRoundData.isBust) {
-          pRound.result = 'Win';
-          pRound.roundPoints = 3;
-        } else {
-          if (pRound.sum > houseRoundData.sum) {
-            pRound.result = 'Win';
-            pRound.roundPoints = 3;
-          } else if (pRound.sum < houseRoundData.sum) {
-            pRound.result = 'Lose';
-            pRound.roundPoints = 0;
-          } else {
-            pRound.result = 'Tie';
-            pRound.roundPoints = 1;
-          }
-        }
-      });
-
-      let houseWins = 0;
-      let houseTies = 0;
-      let houseLosses = 0;
-
-      nonHousePlayers.forEach(p => {
-        const res = p.rounds[currentRoundIdx].result;
-        if (res === 'Lose') houseWins++;
-        else if (res === 'Tie') houseTies++;
-        else if (res === 'Win') houseLosses++;
-      });
-
-      if (houseWins > 0) {
-        houseRoundData.result = 'Win';
-        houseRoundData.roundPoints = 3;
-      } else if (houseTies > 0) {
-        houseRoundData.result = 'Tie';
-        houseRoundData.roundPoints = 1;
-      } else {
-        houseRoundData.result = 'Lose';
-        houseRoundData.roundPoints = 0;
-      }
-
-      state.players.forEach(p => {
-        p.totalScore = p.rounds.reduce((acc, r) => acc + (r ? r.roundPoints : 0), 0);
-      });
-
-      addLog(`Round ${state.round} Complete! House score: ${houseRoundData.isBust ? 'BUST' : houseRoundData.sum}. Points awarded.`);
-
-      if (state.round >= MAX_ROUNDS) {
-        endGame();
-      } else {
-        startNextRound();
-      }
-    }
-
-    function startNextRound() {
-      state.round++;
-      state.roundLockedNumbers.clear();
-      setRoundThrowOrder();
-      state.currentTurnIndex = 0;
-
-      renderScoreboard();
-      updateCurrentTurnDisplay();
-      renderLockedNumbers();
-      updateTurnUI();
-
-      showNotice(`Round ${state.round} started. First thrower: ${getCurrentPlayer().name}.`, 'success');
-    }
-
-    function endGame() {
-      state.started = false;
-      renderScoreboard();
-      renderFinalResults();
-      els.topStatus.textContent = 'Match Complete';
-      showNotice('Game finished! Final results are displayed below.', 'success');
-    }
-
-    function renderFinalResults() {
-      els.finalPanel.style.display = 'block';
-      els.finalList.innerHTML = '';
-
-      const sorted = [...state.players].sort((a, b) => b.totalScore - a.totalScore);
-
-      sorted.forEach((p, idx) => {
-        const row = document.createElement('div');
-        row.className = 'final-row';
-        row.innerHTML = `
-          <div>
-            <strong>#${idx + 1} ${escapeHtml(p.name)} ${p.isHouse ? '(House)' : ''}</strong>
+      row.className = 'final-row';
+      row.innerHTML = `
+        <div>
+          <strong>${i + 1}. ${escapeHtml(p.name)}</strong>
+        </div>
+        <div class="final-score">${p.overallScore} pts</div>
+      `;
+      els.finalList.appendChild(row);
+    });
+
+    els.finalPanel.style.display = 'block';
+
+    const summaryText = sorted.map(p => `${p.name}: ${p.overallScore}pts`).join(', ');
+    syncGameToHellcastle('Blackjack Darts', summaryText);
+  }
+
+  function renderScoreboard() {
+    els.scoreboardBody.innerHTML = '';
+
+    state.players.forEach((player, pIdx) => {
+      const tr = document.createElement('tr');
+      const isHouse = pIdx === state.players.length - 1;
+      const rData = state.round > 0 ? player.rounds[state.round - 1] : null;
+
+      const d1 = rData && rData.darts[0] !== undefined ? rData.darts[0] : '—';
+      const d2 = rData && rData.darts[1] !== undefined ? rData.darts[1] : '—';
+      const d3 = rData && rData.darts[2] !== undefined ? rData.darts[2] : '—';
+
+      const roundScoreDisp = rData ? (rData.busted ? 'BUST' : rData.score) : '—';
+      const resultDisp = rData ? rData.result : 'pending';
+
+      tr.innerHTML = `
+        <td>
+          <div class="player-cell">
+            <div class="avatar">${escapeHtml(player.name.charAt(0).toUpperCase())}</div>
+            <span>${escapeHtml(player.name)}</span>
+            ${isHouse ? '<span class="house-badge">House</span>' : ''}
           </div>
-          <div class="final-score">${p.totalScore} pts</div>
-        `;
-        els.finalList.appendChild(row);
-      });
+        </td>
+        <td><span class="dart-pill">${d1}</span></td>
+        <td><span class="dart-pill">${d2}</span></td>
+        <td><span class="dart-pill">${d3}</span></td>
+        <td><span class="round-score">${roundScoreDisp}</span></td>
+        <td><span class="overall">${player.overallScore}</span></td>
+        <td><span class="result-tag ${resultDisp}">${resultDisp}</span></td>
+      `;
+      els.scoreboardBody.appendChild(tr);
+    });
+  }
 
-      const winner = sorted[0];
-      const summaryText = `Winner: ${winner.name} (${winner.totalScore} pts)`;
-      syncGameToHellcastle('Blackjack Darts', summaryText);
+  function renderLocks() {
+    els.numbersLock.innerHTML = '';
+    if (state.roundLockedNumbers.size === 0) {
+      els.numbersLock.innerHTML = '<span class="helper">None</span>';
+      return;
     }
+    state.roundLockedNumbers.forEach(num => {
+      const pill = document.createElement('span');
+      pill.className = 'lock-pill taken';
+      pill.textContent = num;
+      els.numbersLock.appendChild(pill);
+    });
+  }
 
-    function startGame() {
-      const inputs = Array.from(els.playerInputs.querySelectorAll('input'));
-      const names = inputs.map(i => i.value.trim()).filter(Boolean);
+  function renderLogs() {
+    els.logList.innerHTML = '';
+    state.logs.forEach(log => {
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      item.innerHTML = log;
+      els.logList.appendChild(item);
+    });
+  }
 
-      if (names.length < 2) {
-        showNotice('At least 2 players are required to start.', 'error');
-        return;
-      }
+  function showNotice(msg, type = 'notice') {
+    els.notice.className = `notice ${type}`;
+    els.notice.textContent = msg;
+  }
 
-      const houseIndex = names.findIndex(n => n.toLowerCase() === 'pope');
-      let finalNames = [...names];
+  function initRevealAnimation() {
+    const reveals = document.querySelectorAll('.reveal');
+    reveals.forEach(el => el.classList.add('visible'));
+  }
 
-      if (houseIndex === -1) {
-        finalNames.push('Pope');
-      } else {
-        finalNames.splice(houseIndex, 1);
-        finalNames.push('Pope');
-      }
-
-      state.players = finalNames.map(name => ({
-        name: name,
-        isHouse: name.toLowerCase() === 'pope',
-        totalScore: 0,
-        rounds: Array(MAX_ROUNDS).fill(null)
-      }));
-
-      state.started = true;
-      state.round = 1;
-      state.logs = [];
-      state.roundLockedNumbers.clear();
-      els.finalPanel.style.display = 'none';
-
-      setRoundThrowOrder();
-      state.currentTurnIndex = 0;
-
-      els.topStatus.textContent = 'Round 1 in Progress';
-      addLog('Game started. Good luck!');
-
-      renderScoreboard();
-      updateCurrentTurnDisplay();
-      renderLockedNumbers();
-      updateTurnUI();
-
-      showNotice(`Game started! Round 1. First thrower: ${getCurrentPlayer().name}`, 'success');
-    }
-
-    function resetGame() {
-      state.started = false;
-      state.round = 0;
-      state.currentTurnIndex = 0;
-      state.roundOrder = [];
-      state.players = [];
-      state.roundLockedNumbers.clear();
-      state.logs = [];
-      state.turnBuilder = { darts: [], selectedBase: null, isStanding: false };
-
-      els.topStatus.textContent = 'Set up players to begin';
-      els.roundDisplay.textContent = 'Round 0 / 8';
-      els.orderDisplay.textContent = 'Waiting to start';
-      els.currentPlayerLabel.textContent = '—';
-      els.currentRoleLabel.textContent = '—';
-      els.currentRoundLabel.textContent = '—';
-      els.runningTotalLabel.textContent = '0';
-      els.scoreboardBody.innerHTML = '';
-      els.logList.innerHTML = '';
-      els.numbersLock.innerHTML = '';
-      els.finalPanel.style.display = 'none';
-
-      updateTurnUI();
-      showNotice('Game reset. Configure players and press Start Game.');
-    }
-
-    function setRoundThrowOrder() {
-      const nonHouse = state.players.filter(p => !p.isHouse);
-      const house = state.players.find(p => p.isHouse);
-
-      const offset = (state.round - 1) % nonHouse.length;
-      const rotatedNonHouse = [...nonHouse.slice(offset), ...nonHouse.slice(0, offset)];
-
-      state.roundOrder = [...rotatedNonHouse, house];
-    }
-
-    function getCurrentPlayer() {
-      return state.roundOrder[state.currentTurnIndex] || null;
-    }
-
-    function updateCurrentTurnDisplay() {
-      const player = getCurrentPlayer();
-      if (!player) return;
-
-      els.roundDisplay.textContent = `Round ${state.round} / ${MAX_ROUNDS}`;
-      els.currentRoundLabel.textContent = `${state.round} / ${MAX_ROUNDS}`;
-      els.currentPlayerLabel.textContent = player.name;
-      els.currentRoleLabel.textContent = player.isHouse ? 'House' : 'Player';
-
-      const orderNames = state.roundOrder.map(p => p.name).join(' → ');
-      els.orderDisplay.textContent = `Order: ${orderNames}`;
-    }
-
-    function renderScoreboard() {
-      els.scoreboardBody.innerHTML = '';
-
-      state.players.forEach(p => {
-        const tr = document.createElement('tr');
-        const rData = p.rounds[state.round - 1];
-
-        const d1 = rData ? formatDartDisplay(rData.darts[0]) : '—';
-        const d2 = rData ? formatDartDisplay(rData.darts[1]) : '—';
-        const d3 = rData ? formatDartDisplay(rData.darts[2]) : '—';
-
-        let roundScoreText = '—';
-        let resultHtml = '<span class="result-tag pending">Pending</span>';
-
-        if (rData && rData.submitted) {
-          if (rData.isBust) {
-            roundScoreText = `<span style="color:var(--red);">BUST (0)</span>`;
-          } else {
-            roundScoreText = `${rData.sum}`;
-          }
-
-          if (rData.result === 'Win') resultHtml = '<span class="result-tag win">Win (+3)</span>';
-          else if (rData.result === 'Lose') resultHtml = '<span class="result-tag lose">Lose</span>';
-          else if (rData.result === 'Tie') resultHtml = '<span class="result-tag tie">Tie (+1)</span>';
-
-          if (p.isHouse && rData.result !== 'Pending') {
-            if (rData.result === 'Win') resultHtml = '<span class="result-tag win">Win (+3)</span>';
-            else if (rData.result === 'Tie') resultHtml = '<span class="result-tag tie">Tie (+1)</span>';
-          }
-        }
-
-        const avatarInitial = p.name.charAt(0).toUpperCase();
-
-        tr.innerHTML = `
-          <td>
-            <div class="player-cell">
-              <div class="avatar">${avatarInitial}</div>
-              <div>
-                ${escapeHtml(p.name)}
-                ${p.isHouse ? '<span class="house-badge">House</span>' : ''}
-              </div>
-            </div>
-          </td>
-          <td><span class="dart-pill ${rData && rData.darts[0] && rData.darts[0].isBust ? 'bust' : ''}">${d1}</span></td>
-          <td><span class="dart-pill ${rData && rData.darts[1] && rData.darts[1].isBust ? 'bust' : ''}">${d2}</span></td>
-          <td><span class="dart-pill ${rData && rData.darts[2] && rData.darts[2].isBust ? 'bust' : ''}">${d3}</span></td>
-          <td class="round-score">${roundScoreText}</td>
-          <td class="overall">${p.totalScore}</td>
-          <td>${resultHtml}</td>
-        `;
-
-        els.scoreboardBody.appendChild(tr);
-      });
-    }
-
-    function renderLockedNumbers() {
-      els.numbersLock.innerHTML = '';
-
-      if (state.roundLockedNumbers.size === 0) {
-        els.numbersLock.innerHTML = '<span class="helper">None yet this round</span>';
-        return;
-      }
-
-      Array.from(state.roundLockedNumbers).sort((a, b) => Number(a) - Number(b)).forEach(num => {
-        const pill = document.createElement('div');
-        pill.className = 'lock-pill taken';
-        pill.textContent = num;
-        els.numbersLock.appendChild(pill);
-      });
-    }
-
-    function addLog(msg) {
-      state.logs.unshift(msg);
-      els.logList.innerHTML = state.logs.map(l => `<div class="log-item">${l}</div>`).join('');
-    }
-
-    function showNotice(text, type = '') {
-      els.notice.className = `notice ${type}`;
-      els.notice.textContent = text;
-    }
-
-    function initRevealAnimation() {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-          }
-        });
-      }, { threshold: 0.1 });
-
-      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
-  </script>
+  document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
