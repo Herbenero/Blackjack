@@ -8,271 +8,849 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #0d0b08;
-      --bg2: #17130d;
-      --panel: #1b1711cc;
-      --panel-solid: #201b14;
-      --ink: #f6eed8;
-      --muted: #baa98a;
-      --gold: #f2c14e;
-      --gold2: #d89b24;
-      --red: #dd4e3d;
-      --green: #6fcb93;
-      --line: rgba(242, 193, 78, .16);
-      --shadow: 0 20px 60px rgba(0, 0, 0, .42);
-      --radius: 24px;
-      --radius-sm: 16px;
-      --max: 1320px;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      color: var(--ink);
-      background: radial-gradient(circle at 15% 10%, rgba(242, 193, 78, .12), transparent 22%),
-                  radial-gradient(circle at 85% 10%, rgba(221, 78, 61, .10), transparent 20%),
-                  radial-gradient(circle at 50% 100%, rgba(216, 155, 36, .12), transparent 30%),
-                  linear-gradient(180deg, #0a0907 0%, #110f0b 48%, #0a0907 100%);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    .shell { width: min(var(--max), calc(100% - 1.2rem)); margin-inline: auto; padding-bottom: 2rem; }
-    .topbar {
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 1rem; padding: 1rem 0 .6rem; position: sticky; top: 0; z-index: 30;
-      backdrop-filter: blur(14px);
-      background: linear-gradient(180deg, rgba(10, 9, 7, .88), rgba(10, 9, 7, .42), transparent);
-    }
-    .brand { display: flex; align-items: center; gap: .85rem; }
-    .brand h1 { margin: 0; font-family: 'Bebas Neue', cursive; letter-spacing: .06em; font-size: clamp(2rem, 3vw, 3.5rem); line-height: .9; color: var(--gold); }
-    .brand p { margin: 0; color: var(--muted); font-size: .9rem; text-transform: uppercase; letter-spacing: .12em; }
-    .panel { background: linear-gradient(180deg, rgba(31, 27, 20, .9), rgba(18, 16, 12, .88)); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(10px); padding: 1.5rem; margin-top: 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-    .btn { background: var(--gold); color: #000; border: none; font-weight: 800; padding: .8rem 1.2rem; border-radius: var(--radius-sm); cursor: pointer; text-transform: uppercase; font-size: 1rem; }
-    .btn:disabled { opacity: .4; cursor: not-allowed; }
-    .btn-danger { background: var(--red); color: #fff; }
-    .btn-stand { background: var(--green); color: #000; }
-    .score-badge { font-size: 1.5rem; font-weight: 800; color: var(--gold); }
-    .player-card { border: 1px solid var(--line); padding: 1rem; border-radius: var(--radius-sm); background: rgba(255,255,255,0.02); }
-    .player-card.active { border-color: var(--gold); background: rgba(242, 193, 78, 0.05); }
-    .logs { background: #000; border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 1rem; font-family: monospace; font-size: .85rem; color: var(--gold); max-height: 200px; overflow-y: auto; }
+    :root{--bg:#0d0b08; --bg2:#17130d; --panel:#1b1711cc; --panel-solid:#201b14; --ink:#f6eed8; --muted:#baa98a; --gold:#f2c14e; --gold2:#d89b24; --red:#dd4e3d; --green:#6fcb93; --line:rgba(242,193,78,.16); --shadow:0 20px 60px rgba(0,0,0,.42); --radius:24px; --radius-sm:16px; --max:1320px; }
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0; font-family:'Inter',sans-serif; color:var(--ink); background: radial-gradient(circle at 15% 10%, rgba(242,193,78,.12), transparent 22%), radial-gradient(circle at 85% 10%, rgba(221,78,61,.10), transparent 20%), radial-gradient(circle at 50% 100%, rgba(216,155,36,.12), transparent 30%), linear-gradient(180deg,#0a0907 0%, #110f0b 48%, #0a0907 100%); min-height:100vh; overflow-x:hidden; }
+    body::before{content:""; position:fixed; inset:0; pointer-events:none; opacity:.06; background-image: linear-gradient(rgba(255,255,255,.16) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px); background-size:28px 28px; mask-image:linear-gradient(to bottom, rgba(0,0,0,.45), transparent 88%); }
+    .shell{width:min(var(--max), calc(100% - 1.2rem)); margin-inline:auto; }
+    .topbar{display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1rem 0 .6rem; position:sticky; top:0; z-index:30; backdrop-filter:blur(14px); background:linear-gradient(180deg, rgba(10,9,7,.88), rgba(10,9,7,.42), transparent); }
+    .brand{display:flex; align-items:center; gap:.85rem; }
+    .brand-mark{width:54px; aspect-ratio:1; border-radius:18px; background: radial-gradient(circle at 50% 50%, #f2c14e 0 20%, #8c531f 21% 32%, #f2c14e 33% 50%, #241c11 51% 100%); position:relative; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12), 0 10px 24px rgba(242,193,78,.2); }
+    .brand-mark::after{content:""; position:absolute; width:24px; height:2px; background:#f2e4c0; border-radius:999px; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-35deg); }
+    .brand h1{margin:0; font-family:'Bebas Neue',cursive; letter-spacing:.06em; font-size:clamp(2rem,3vw,3.5rem); line-height:.9; color:var(--gold); }
+    .brand p{margin:0; color:var(--muted); font-size:.9rem; text-transform:uppercase; letter-spacing:.12em; }
+    .status-chip{border:1px solid var(--line); background:rgba(255,255,255,.03); border-radius:999px; padding:.85rem 1rem; color:var(--ink); font-weight:800; text-transform:uppercase; letter-spacing:.05em; font-size:.82rem; }
+    .hero{display:grid; grid-template-columns:1.05fr .95fr; gap:1rem; padding:.8rem 0 1rem; }
+    .panel{background:linear-gradient(180deg, rgba(31,27,20,.9), rgba(18,16,12,.88)); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); backdrop-filter:blur(10px); }
+    .intro{padding:clamp(1.2rem,2vw,2rem); position:relative; overflow:hidden; min-height:300px; }
+    .intro::before{content:""; position:absolute; right:-10%; top:-10%; width:320px; height:320px; border-radius:50%; background: radial-gradient(circle, rgba(242,193,78,.22) 0 18%, transparent 56%), conic-gradient(from 30deg, rgba(242,193,78,.18), rgba(221,78,61,.06), transparent 60%, rgba(242,193,78,.14)); filter:blur(8px); }
+    .eyebrow{display:inline-flex; align-items:center; gap:.5rem; color:var(--muted); text-transform:uppercase; letter-spacing:.18em; font-size:.77rem; font-weight:800; }
+    .eyebrow::before{content:""; width:30px; height:1px; background:linear-gradient(90deg,var(--gold),transparent); }
+    .intro h2{margin:.7rem 0 .8rem; font-family:'Bebas Neue',cursive; line-height:.92; letter-spacing:.03em; font-size:clamp(3rem,6vw,6.1rem); max-width:10ch; }
+    .intro p{max-width:62ch; color:#e8ddc3; line-height:1.7; margin:0; }
+    .rules-strip{margin-top:1.25rem; display:flex; gap:.65rem; flex-wrap:wrap; }
+    .rule-pill{border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); color:var(--ink); border-radius:999px; padding:.65rem .85rem; font-size:.82rem; font-weight:800; }
+    .setup{padding:1.15rem; display:flex; flex-direction:column; gap:1rem; }
+    .setup-head h3, .section-head h3, .turn-panel h3, .final-panel h3{margin:0; font-family:'Bebas Neue',cursive; letter-spacing:.05em; font-size:clamp(1.8rem,3vw,2.5rem); }
+    .setup-head p, .section-head p, .turn-panel p, .final-panel p{margin:.25rem 0 0; color:var(--muted); line-height:1.6; }
+    .player-inputs{display:flex; flex-direction:column; gap:.75rem; }
+    .input-row{display:grid; grid-template-columns:1fr auto; gap:.75rem; align-items:center; animation:fadeUp .45s ease both; }
+    input[type="text"]{width:100%; border:none; outline:none; color:var(--ink); background:#0f0d09; border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:1rem; font:inherit; transition:.2s ease; }
+    input:focus{border-color:rgba(242,193,78,.52); box-shadow:0 0 0 4px rgba(242,193,78,.08); transform:translateY(-1px); }
+    .tiny-btn,.btn,.score-btn{border:none; cursor:pointer; font:inherit; transition:transform .16s ease, background .16s ease, box-shadow .16s ease, opacity .16s ease; }
+    .tiny-btn{width:46px; height:46px; border-radius:14px; background:rgba(221,78,61,.12); border:1px solid rgba(221,78,61,.28); color:#ffc2ba; font-weight:900; }
+    .tiny-btn:hover,.btn:hover,.score-btn:hover{transform:translateY(-2px); }
+    .tiny-btn:active,.btn:active,.score-btn:active{transform:translateY(0) scale(.98); }
+    .btn:disabled{opacity:0.4; cursor:not-allowed; transform:none !important; box-shadow:none !important; }
+    .setup-actions,.turn-actions{display:flex; gap:.75rem; flex-wrap:wrap; }
+    .btn{border-radius:18px; padding:1rem 1.15rem; font-weight:900; letter-spacing:.04em; text-transform:uppercase; }
+    .btn-primary{background:linear-gradient(135deg,var(--gold) 0%, #e4a52b 100%); color:#1b1307; box-shadow:0 14px 30px rgba(242,193,78,.22); }
+    .btn-secondary{background:rgba(255,255,255,.04); color:var(--ink); border:1px solid rgba(255,255,255,.1); }
+    .btn-warning{background:rgba(242,193,78,.15); color:var(--gold); border:1px solid rgba(242,193,78,.35); }
+    .btn-danger{background:rgba(221,78,61,.12); color:#ffc7c0; border:1px solid rgba(221,78,61,.25); }
+    .main-grid{display:grid; grid-template-columns:1.18fr .82fr; gap:1rem; padding-bottom:2rem; }
+    .scoreboard{padding:1.1rem; }
+    .section-head{display:flex; justify-content:space-between; align-items:end; gap:1rem; margin-bottom:1rem; }
+    .round-banner{display:flex; gap:.75rem; flex-wrap:wrap; }
+    .round-tag{padding:.6rem .85rem; border-radius:999px; background:rgba(242,193,78,.1); border:1px solid rgba(242,193,78,.24); color:var(--gold); font-weight:900; text-transform:uppercase; letter-spacing:.06em; font-size:.76rem; }
+    .board-wrap{overflow:auto; border-radius:20px; border:1px solid rgba(255,255,255,.06); background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)); }
+    table{width:100%; border-collapse:collapse; min-width:850px; }
+    thead th{text-align:left; font-size:.76rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); padding:1rem; border-bottom:1px solid rgba(255,255,255,.08); background:rgba(0,0,0,.12); position:sticky; top:0; z-index:1; }
+    tbody td{padding:1rem; border-bottom:1px solid rgba(255,255,255,.05); vertical-align:middle; }
+    tbody tr:hover{background:rgba(255,255,255,.025); }
+    .player-cell{display:flex; align-items:center; gap:.8rem; font-weight:800; }
+    .avatar{width:40px; height:40px; border-radius:12px; display:grid; place-items:center; color:#1a1208; background:linear-gradient(135deg,#f8d97c,#cf8f1d); box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); font-weight:900; flex:0 0 auto; }
+    .house-badge{margin-left:.45rem; padding:.2rem .45rem; border-radius:999px; background:rgba(242,193,78,.12); border:1px solid rgba(242,193,78,.28); color:var(--gold); font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; font-weight:900; }
+    .dart-pill{display:inline-flex; min-width:70px; justify-content:center; padding:.45rem .65rem; border-radius:999px; background:#12100b; border:1px solid rgba(255,255,255,.08); font-weight:900; }
+    .dart-pill.bust{background:rgba(221,78,61,.14); color:#ffb9af; border-color:rgba(221,78,61,.28); }
+    .round-score{font-weight:900; font-size:1.08rem; }
+    .overall{color:var(--gold); font-weight:900; font-size:1.16rem; }
+    .result-tag{display:inline-flex; align-items:center; padding:.45rem .7rem; border-radius:999px; font-size:.75rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; border:1px solid transparent; }
+    .win{background:rgba(111,203,147,.12); color:#c7f2d6; border-color:rgba(111,203,147,.24); }
+    .lose{background:rgba(221,78,61,.12); color:#ffc2ba; border-color:rgba(221,78,61,.28); }
+    .tie{background:rgba(242,193,78,.12); color:#ffe6a3; border-color:rgba(242,193,78,.28); }
+    .pending{background:rgba(255,255,255,.05); color:var(--muted); border-color:rgba(255,255,255,.08); }
+    .side-stack{display:flex; flex-direction:column; gap:1rem; }
+    .turn-panel,.log-panel,.final-panel{padding:1.1rem; }
+    .turn-meta{display:grid; grid-template-columns:repeat(4,1fr); gap:.7rem; margin:1rem 0; }
+    .meta-box{border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:18px; padding:.9rem; }
+    .meta-box span{display:block; color:var(--muted); font-size:.74rem; text-transform:uppercase; letter-spacing:.12em; margin-bottom:.35rem; font-weight:800; }
+    .meta-box strong{font-size:1.08rem; line-height:1.15; }
+    .dart-stage{border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:20px; padding:1rem; margin-bottom:1rem; }
+    .dart-stage-head{display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:.9rem; flex-wrap:wrap; }
+    .dart-index{font-family:'Bebas Neue',cursive; font-size:1.8rem; letter-spacing:.05em; }
+    .selection-preview{display:flex; gap:.55rem; flex-wrap:wrap; align-items:center; }
+    .preview-chip{padding:.45rem .7rem; border-radius:999px; background:#100e0a; border:1px solid rgba(255,255,255,.08); font-weight:900; min-width:72px; text-align:center; }
+    .preview-chip.active{color:var(--gold); border-color:rgba(242,193,78,.3); background:rgba(242,193,78,.08); }
+    .button-bank{display:grid; gap:.8rem; }
+    .button-row{display:grid; grid-template-columns:repeat(6,1fr); gap:.55rem; }
+    .score-btn{border-radius:14px; min-height:52px; font-weight:900; color:var(--ink); border:1px solid rgba(255,255,255,.08); background:#12100b; }
+    .score-btn:hover{background:#18150f; box-shadow:0 10px 20px rgba(0,0,0,.18); }
+    .score-btn.selected{background:rgba(242,193,78,.12); color:var(--gold); border-color:rgba(242,193,78,.3); }
+    .score-btn.miss{background:rgba(221,78,61,.10); color:#ffc2ba; border-color:rgba(221,78,61,.2); }
+    .helper{color:var(--muted); font-size:.84rem; line-height:1.6; }
+    .dart-history{display:grid; grid-template-columns:repeat(3,1fr); gap:.7rem; margin:1rem 0; }
+    .history-box{border-radius:16px; padding:.9rem; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); }
+    .history-box span{display:block; color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.12em; margin-bottom:.25rem; font-weight:800; }
+    .history-box strong{font-size:1.05rem; }
+    .notice{min-height:52px; padding:.9rem 1rem; border-radius:16px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); color:#f0e5ca; line-height:1.6; margin-top:.8rem; }
+    .notice.error{background:rgba(221,78,61,.12); border-color:rgba(221,78,61,.28); color:#ffc2ba; }
+    .notice.success{background:rgba(111,203,147,.12); border-color:rgba(111,203,147,.24); color:#caf0d8; }
+    .notice.bust-flash{animation:bustFlash .8s ease 2; background:rgba(221,78,61,.22); border-color:rgba(221,78,61,.48); color:#fff2ef; font-weight:900; text-transform:uppercase; letter-spacing:.08em; }
+    @keyframes bustFlash{0%,100%{ transform:scale(1); box-shadow:0 0 0 rgba(221,78,61,0) } 25%{ transform:scale(1.02); box-shadow:0 0 0 6px rgba(221,78,61,.08) } 50%{ transform:scale(1); box-shadow:0 0 0 12px rgba(221,78,61,.04) } }
+    .numbers-lock{display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
+    .lock-pill{padding:.45rem .65rem; border-radius:999px; border:1px solid rgba(255,255,255,.08); background:#12100b; color:var(--muted); font-weight:900; font-size:.76rem; }
+    .lock-pill.taken{background:rgba(242,193,78,.12); color:var(--gold); border-color:rgba(242,193,78,.28); }
+    .log-list{display:flex; flex-direction:column; gap:.75rem; max-height:330px; overflow:auto; }
+    .log-item{padding:.9rem 1rem; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); color:#eadfbe; line-height:1.55; }
+    .log-item strong{ color:var(--gold) }
+    .final-panel{ display:none }
+    .final-list{display:grid; gap:.8rem; margin-top:1rem; }
+    .final-row{display:grid; grid-template-columns:1fr auto; gap:1rem; align-items:center; padding:1rem; border-radius:18px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); }
+    .final-score{font-family:'Bebas Neue',cursive; font-size:2rem; color:var(--gold); letter-spacing:.05em; }
+    .reveal{opacity:0; transform:translateY(18px); transition:opacity .65s ease, transform .65s ease; }
+    .reveal.visible{opacity:1; transform:translateY(0); }
+    @keyframes fadeUp{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+    @media (max-width: 1120px){.hero,.main-grid{ grid-template-columns:1fr; } }
+    @media (max-width: 780px){.topbar{ flex-direction:column; align-items:flex-start; } .input-row{ grid-template-columns:1fr; } .turn-meta,.dart-history{ grid-template-columns:1fr 1fr; } .button-row{ grid-template-columns:repeat(4,1fr); } .section-head{ flex-direction:column; align-items:flex-start; } }
+    @media (max-width: 560px){.turn-meta,.dart-history,.button-row{ grid-template-columns:1fr 1fr; } }
   </style>
 </head>
 <body>
   <div class="shell">
-    <div class="topbar">
+    <header class="topbar">
       <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
         <div>
-          <h1>Blackjack Darts</h1>
-          <p>Beat The House</p>
+          <h1>Blackjack</h1>
+          <p>Darts webapp · button scoring · House logic</p>
         </div>
       </div>
-    </div>
+      <div class="status-chip" id="topStatus">Set up players to begin</div>
+    </header>
 
-    <!-- Game Setup -->
-    <div id="setup-panel" class="panel">
-      <h2>Game Setup</h2>
-      <p>Enter player names (comma separated):</p>
-      <input type="text" id="player-names-input" value="Player 1, Player 2" style="width: 100%; padding: .8rem; border-radius: 8px; border: 1px solid var(--line); background: var(--bg2); color: var(--ink); margin-bottom: 1rem;">
-      <button class="btn" onclick="startGame()">Start Game</button>
-    </div>
-
-    <!-- Active Game Panel -->
-    <div id="game-panel" class="panel" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2>Round <span id="round-num">1</span></h2>
-        <button class="btn btn-danger" onclick="resetGame()">Reset Game</button>
-      </div>
-
-      <!-- House / Dealer Board -->
-      <div class="player-card" style="margin-bottom: 1.5rem; border-color: var(--red);">
-        <h3>House (Dealer)</h3>
-        <div>Score: <span id="house-score" class="score-badge">0</span> <span id="house-status"></span></div>
-      </div>
-
-      <!-- Active Turn Area -->
-      <div id="turn-area" class="panel" style="margin-bottom: 1.5rem; background: var(--panel-solid);">
-        <h3>Current Turn: <span id="current-player-name" style="color: var(--gold);"></span></h3>
-        <p>Current Hand Value: <span id="current-player-score" class="score-badge">0</span></p>
-        <div style="display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem;">
-          <button class="btn" onclick="addPoints(1)">+1</button>
-          <button class="btn" onclick="addPoints(5)">+5</button>
-          <button class="btn" onclick="addPoints(10)">+10</button>
-          <button class="btn btn-stand" onclick="standCurrentPlayer()">Stand</button>
+    <section class="hero">
+      <article class="panel intro reveal">
+        <div class="eyebrow">Blackjack darts</div>
+        <h2>Tap scores. Beat the House.</h2>
+        <p>
+          Use the number buttons from 1–21 or choose Miss. The game lasts 8 rounds, the House role rotates each round, and the House always throws last.
+        </p>
+        <div class="rules-strip">
+          <div class="rule-pill">Direct Button Scoring</div>
+          <div class="rule-pill">Bust if round total exceeds 21</div>
+          <div class="rule-pill">Win vs House: 3 pts | Tie: 1 pt</div>
         </div>
-      </div>
+      </article>
 
-      <!-- Scoreboard Grid -->
-      <h3>Scoreboard</h3>
-      <div id="players-grid" class="grid"></div>
+      <aside class="panel setup reveal">
+        <div class="setup-head">
+          <h3>Players</h3>
+          <p>Add at least 2 players. House role rotates each round and throws last.</p>
+        </div>
+        <div class="player-inputs" id="playerInputs"></div>
+        <div class="setup-actions">
+          <button class="btn btn-secondary" id="addPlayerBtn" type="button">Add Player</button>
+          <button class="btn btn-primary" id="startGameBtn" type="button">Start Game</button>
+          <button class="btn btn-danger" id="resetBtn" type="button">Reset</button>
+        </div>
+      </aside>
+    </section>
 
-      <!-- Game Logs -->
-      <h3 style="margin-top: 1.5rem;">Console & Game Logs</h3>
-      <div id="logs" class="logs"></div>
-    </div>
+    <main class="main-grid">
+      <section class="panel scoreboard reveal">
+        <div class="section-head">
+          <div>
+            <h3>Scoreboard</h3>
+            <p>Dart values, round score, and overall game score.</p>
+          </div>
+          <div class="round-banner">
+            <div class="round-tag" id="roundDisplay">Round 0 / 8</div>
+            <div class="round-tag" id="orderDisplay">Waiting to start</div>
+          </div>
+        </div>
+        <div class="board-wrap">
+          <table aria-label="Blackjack darts scoreboard">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Dart 1</th>
+                <th>Dart 2</th>
+                <th>Dart 3</th>
+                <th>Round Score</th>
+                <th>Overall</th>
+                <th>Round Result</th>
+              </tr>
+            </thead>
+            <tbody id="scoreboardBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="side-stack">
+        <section class="panel turn-panel reveal">
+          <div>
+            <h3>Current Turn</h3>
+            <p>Build each dart using buttons. Pick a number or Miss, then lock the dart.</p>
+          </div>
+
+          <div class="turn-meta">
+            <div class="meta-box">
+              <span>Throwing</span>
+              <strong id="currentPlayerLabel">—</strong>
+            </div>
+            <div class="meta-box">
+              <span>Role</span>
+              <strong id="currentRoleLabel">—</strong>
+            </div>
+            <div class="meta-box">
+              <span>Round</span>
+              <strong id="currentRoundLabel">—</strong>
+            </div>
+            <div class="meta-box">
+              <span>Running Total</span>
+              <strong id="runningTotalLabel">0</strong>
+            </div>
+          </div>
+
+          <div class="dart-stage">
+            <div class="dart-stage-head">
+              <div class="dart-index" id="dartStageLabel">Dart 1 of 3</div>
+              <div class="selection-preview">
+                <div class="preview-chip" id="previewBase">Base: —</div>
+                <div class="preview-chip active" id="previewValue">Value: —</div>
+              </div>
+            </div>
+
+            <div class="button-bank">
+              <div class="helper">Score selection</div>
+              <div class="button-row" id="scoreButtonsRow1"></div>
+              <div class="button-row" id="scoreButtonsRow2"></div>
+              <div class="button-row" id="scoreButtonsRow3"></div>
+              <div class="button-row" id="scoreButtonsRow4"></div>
+            </div>
+
+            <div class="turn-actions" style="margin-top:1rem;">
+              <button class="btn btn-primary" id="lockDartBtn" type="button">Lock Dart</button>
+              <button class="btn btn-warning" id="standBtn" type="button">Stand</button>
+              <button class="btn btn-secondary" id="undoDartBtn" type="button">Undo Last Dart</button>
+              <button class="btn btn-danger" id="clearTurnBtn" type="button">Clear Turn</button>
+              <button class="btn btn-secondary" id="submitTurnBtn" type="button">Submit Turn</button>
+            </div>
+
+            <div class="dart-history">
+              <div class="history-box">
+                <span>Dart 1</span>
+                <strong id="dartHistory1">—</strong>
+              </div>
+              <div class="history-box">
+                <span>Dart 2</span>
+                <strong id="dartHistory2">—</strong>
+              </div>
+              <div class="history-box">
+                <span>Dart 3</span>
+                <strong id="dartHistory3">—</strong>
+              </div>
+            </div>
+
+            <div class="helper">
+              Number lock rule: if a player hits a base number in the round, opponents cannot hit that same base number in the same round. Miss does not lock anything.
+            </div>
+          </div>
+
+          <div class="notice" id="notice">Game not started yet.</div>
+
+          <div>
+            <div class="helper" style="margin-top:1rem;">Numbers already hit this round</div>
+            <div class="numbers-lock" id="numbersLock"></div>
+          </div>
+        </section>
+
+        <section class="panel log-panel reveal">
+          <div class="section-head" style="margin-bottom:.9rem;">
+            <div>
+              <h3>Round Log</h3>
+              <p>House outcomes, busts, wins, and ties.</p>
+            </div>
+          </div>
+          <div class="log-list" id="logList"></div>
+        </section>
+
+        <section class="panel final-panel reveal" id="finalPanel">
+          <div>
+            <h3>Final Scores</h3>
+            <p>The match is complete after 8 rounds.</p>
+          </div>
+          <div class="final-list" id="finalList"></div>
+        </section>
+      </aside>
+    </main>
   </div>
 
   <script>
-    let gameState = {
-      round: 1,
-      currentPlayerIndex: 0,
-      house: { score: 0, busted: false },
-      players: []
+    const MAX_ROUNDS = 8;
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    const state = {
+      players: [],
+      started: false,
+      round: 0,
+      currentTurnIndex: 0,
+      roundOrder: [],
+      roundLockedNumbers: new Set(),
+      logs: [],
+      turnBuilder: {
+        darts: [],
+        selectedBase: null,
+        isStanding: false
+      }
     };
 
-    function logMessage(msg) {
-      console.log(msg);
-      const logsEl = document.getElementById('logs');
-      if (logsEl) {
-        logsEl.innerHTML += `<div>${msg}</div>`;
-        logsEl.scrollTop = logsEl.scrollHeight;
+    const els = {
+      playerInputs: document.getElementById('playerInputs'),
+      addPlayerBtn: document.getElementById('addPlayerBtn'),
+      startGameBtn: document.getElementById('startGameBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      scoreboardBody: document.getElementById('scoreboardBody'),
+      roundDisplay: document.getElementById('roundDisplay'),
+      orderDisplay: document.getElementById('orderDisplay'),
+      currentPlayerLabel: document.getElementById('currentPlayerLabel'),
+      currentRoleLabel: document.getElementById('currentRoleLabel'),
+      currentRoundLabel: document.getElementById('currentRoundLabel'),
+      runningTotalLabel: document.getElementById('runningTotalLabel'),
+      notice: document.getElementById('notice'),
+      numbersLock: document.getElementById('numbersLock'),
+      logList: document.getElementById('logList'),
+      topStatus: document.getElementById('topStatus'),
+      finalPanel: document.getElementById('finalPanel'),
+      finalList: document.getElementById('finalList'),
+      scoreButtonsRow1: document.getElementById('scoreButtonsRow1'),
+      scoreButtonsRow2: document.getElementById('scoreButtonsRow2'),
+      scoreButtonsRow3: document.getElementById('scoreButtonsRow3'),
+      scoreButtonsRow4: document.getElementById('scoreButtonsRow4'),
+      previewBase: document.getElementById('previewBase'),
+      previewValue: document.getElementById('previewValue'),
+      dartStageLabel: document.getElementById('dartStageLabel'),
+      dartHistory1: document.getElementById('dartHistory1'),
+      dartHistory2: document.getElementById('dartHistory2'),
+      dartHistory3: document.getElementById('dartHistory3'),
+      lockDartBtn: document.getElementById('lockDartBtn'),
+      standBtn: document.getElementById('standBtn'),
+      undoDartBtn: document.getElementById('undoDartBtn'),
+      clearTurnBtn: document.getElementById('clearTurnBtn'),
+      submitTurnBtn: document.getElementById('submitTurnBtn')
+    };
+
+    function syncGameToHellcastle(gameName, resultSummary) {
+      const payload = {
+        date: new Date().toISOString().split('T')[0],
+        game: gameName,
+        summary: resultSummary
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycby30NBO4KCHCo6EtGB-wYB8diDF2xtQQuatCJOUWrEab-sSE08EhflxTebKzVYuEg8fCQ/exec", {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => console.log("Hellcastle sync response:", data))
+      .catch(err => console.error("Hellcastle sync error:", err));
+    }
+
+    function init() {
+      setupInitialPlayerInputs();
+      buildButtonBank();
+      attachEventListeners();
+      resetGame();
+      initRevealAnimation();
+    }
+
+    function setupInitialPlayerInputs() {
+      els.playerInputs.innerHTML = '';
+      createPlayerInput('');
+      createPlayerInput('');
+    }
+
+    function createPlayerInput(defaultName = '') {
+      const count = els.playerInputs.querySelectorAll('.input-row').length;
+      if (count >= 6) {
+        showNotice('Maximum 6 players allowed.', 'error');
+        return;
       }
+
+      const row = document.createElement('div');
+      row.className = 'input-row';
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = `Player ${count + 1} Name`;
+      input.value = defaultName;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'tiny-btn';
+      removeBtn.textContent = '✕';
+      removeBtn.title = 'Remove Player';
+      removeBtn.addEventListener('click', () => {
+        if (els.playerInputs.querySelectorAll('.input-row').length <= 2) {
+          showNotice('At least 2 players are required.', 'error');
+          return;
+        }
+        row.remove();
+        updatePlayerInputPlaceholders();
+      });
+
+      row.appendChild(input);
+      row.appendChild(removeBtn);
+      els.playerInputs.appendChild(row);
+    }
+
+    function updatePlayerInputPlaceholders() {
+      const rows = els.playerInputs.querySelectorAll('.input-row input');
+      rows.forEach((inp, i) => {
+        inp.placeholder = `Player ${i + 1} Name`;
+      });
+    }
+
+    function buildButtonBank() {
+      const rows = [
+        [1, 2, 3, 4, 5, 6],
+        [7, 8, 9, 10, 11, 12],
+        [13, 14, 15, 16, 17, 18],
+        [19, 20, 21, 'MISS']
+      ];
+      const rowEls = [els.scoreButtonsRow1, els.scoreButtonsRow2, els.scoreButtonsRow3, els.scoreButtonsRow4];
+
+      rowEls.forEach((rowEl, idx) => {
+        rowEl.innerHTML = '';
+        rows[idx].forEach(val => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `score-btn ${val === 'MISS' ? 'miss' : ''}`;
+          btn.textContent = val === 'MISS' ? 'Miss' : val;
+          btn.addEventListener('click', () => {
+            selectScore(val);
+          });
+          rowEl.appendChild(btn);
+        });
+      });
+    }
+
+    function attachEventListeners() {
+      els.addPlayerBtn.addEventListener('click', () => createPlayerInput());
+      els.startGameBtn.addEventListener('click', startGame);
+      els.resetBtn.addEventListener('click', resetGame);
+
+      els.lockDartBtn.addEventListener('click', lockDart);
+      els.standBtn.addEventListener('click', standTurn);
+      els.undoDartBtn.addEventListener('click', undoLastDart);
+      els.clearTurnBtn.addEventListener('click', resetTurnBuilder);
+      els.submitTurnBtn.addEventListener('click', submitTurn);
     }
 
     function startGame() {
-      const input = document.getElementById('player-names-input').value;
-      const names = input.split(',').map(n => n.trim()).filter(n => n.length > 0);
-      
-      if (names.length === 0) return;
+      const inputs = els.playerInputs.querySelectorAll('.input-row input');
+      const names = [];
 
-      gameState.players = names.map(name => ({
+      inputs.forEach((input, index) => {
+        const val = input.value.trim();
+        names.push(val || `Player ${index + 1}`);
+      });
+
+      if (names.length < 2) {
+        showNotice('At least 2 players are required.', 'error');
+        return;
+      }
+
+      state.players = names.map((name, i) => ({
+        id: i,
         name: name,
+        isHouse: false,
         score: 0,
-        totalPoints: 0,
+        currentDarts: [],
+        currentRoundScore: 0,
         busted: false,
-        standing: false
+        roundStatus: 'pending'
       }));
 
-      gameState.round = 1;
-      document.getElementById('setup-panel').style.display = 'none';
-      document.getElementById('game-panel').style.display = 'block';
+      state.started = true;
+      state.round = 0;
+      state.logs = [];
+      els.finalPanel.style.display = 'none';
 
+      showNotice('Game started! Good luck.', 'success');
       startRound();
     }
 
-    function startRound() {
-      // Generate House Score between 17 and 24 (simulating dealer/house draw)
-      const houseScoreVal = Math.floor(Math.random() * 8) + 17;
-      gameState.house = {
-        score: houseScoreVal,
-        busted: houseScoreVal > 21
-      };
+    function resetGame() {
+      state.players = [];
+      state.started = false;
+      state.round = 0;
+      state.currentTurnIndex = 0;
+      state.roundOrder = [];
+      state.roundLockedNumbers.clear();
+      state.logs = [];
+      resetTurnBuilder();
 
-      document.getElementById('house-score').innerText = gameState.house.score;
-      document.getElementById('house-status').innerText = gameState.house.busted ? '(BUSTED)' : '';
+      els.topStatus.textContent = 'Set up players to begin';
+      els.roundDisplay.textContent = 'Round 0 / 8';
+      els.orderDisplay.textContent = 'Waiting to start';
+      els.currentPlayerLabel.textContent = '—';
+      els.currentRoleLabel.textContent = '—';
+      els.currentRoundLabel.textContent = '—';
+      els.runningTotalLabel.textContent = '0';
+      els.scoreboardBody.innerHTML = '';
+      els.logList.innerHTML = '';
+      els.finalPanel.style.display = 'none';
 
-      gameState.currentPlayerIndex = 0;
-      gameState.players.forEach(p => {
-        p.score = 0;
-        p.busted = false;
-        p.standing = false;
-      });
-
-      logMessage(`--- Starting Round ${gameState.round} ---`);
-      logMessage(`House Target/Score: ${gameState.house.score} ${gameState.house.busted ? '(Bust)' : ''}`);
-
+      showNotice('Setup players and press Start Game.', 'info');
       updateUI();
     }
 
-    function addPoints(pts) {
-      let player = gameState.players[gameState.currentPlayerIndex];
-      if (player.busted || player.standing) return;
-
-      player.score += pts;
-      if (player.score > 21) {
-        player.busted = true;
-        logMessage(`${player.name} added ${pts} pts -> Score: ${player.score} (BUSTED)`);
-        nextTurn();
-      } else {
-        logMessage(`${player.name} added ${pts} pts -> Current Score: ${player.score}`);
-        updateUI();
+    function startRound() {
+      if (state.round >= MAX_ROUNDS) {
+        endGame();
+        return;
       }
-    }
 
-    function standCurrentPlayer() {
-      let player = gameState.players[gameState.currentPlayerIndex];
-      if (player.busted || player.standing) return;
+      state.round++;
+      state.roundLockedNumbers.clear();
 
-      player.standing = true;
-      logMessage(`${player.name} chose to STAND at ${player.score}`);
-      nextTurn();
-    }
+      // House rotates each round: Player 0 -> Round 1, Player 1 -> Round 2, etc.
+      const houseIndex = (state.round - 1) % state.players.length;
 
-    function nextTurn() {
-      gameState.currentPlayerIndex++;
-      if (gameState.currentPlayerIndex >= gameState.players.length) {
-        evaluateRound();
-      } else {
-        updateUI();
+      // Round Order: non-House players throw first, House throws last
+      state.roundOrder = [];
+      for (let i = 1; i < state.players.length; i++) {
+        state.roundOrder.push((houseIndex + i) % state.players.length);
       }
-    }
+      state.roundOrder.push(houseIndex);
 
-    function evaluateRound() {
-      const houseScore = gameState.house.score;
-      const houseBust = gameState.house.busted;
+      state.currentTurnIndex = 0;
 
-      logMessage(`\n=== Round ${gameState.round} Results ===`);
-
-      gameState.players.forEach(player => {
-        let ptsAwarded = 0;
-
-        if (!player.busted) {
-          if (houseBust || player.score > houseScore) {
-            ptsAwarded = 3; // Beat the house
-          } else if (player.score === houseScore) {
-            ptsAwarded = 1; // Tied the house
-          }
-        }
-
-        player.totalPoints += ptsAwarded;
-
-        // Log result details for each player
-        const logText = `Player: ${player.name.padEnd(12)} | Hand Score: ${String(player.score).padStart(2)} | Busted: ${String(player.busted).padEnd(5)} | House: ${houseScore} | Points Awarded: +${ptsAwarded} | Total Match Points: ${player.totalPoints}`;
-        logMessage(logText);
+      state.players.forEach(p => {
+        p.isHouse = false;
+        p.currentDarts = [];
+        p.currentRoundScore = 0;
+        p.busted = false;
+        p.roundStatus = 'pending';
       });
 
-      gameState.round++;
-      setTimeout(() => {
-        alert("Round complete! Check logs for detailed scores.");
+      state.players[houseIndex].isHouse = true;
+
+      resetTurnBuilder();
+      showNotice(`Round ${state.round} started. House: ${state.players[houseIndex].name} (throws last)`, 'info');
+      updateUI();
+    }
+
+    function getCurrentPlayer() {
+      if (!state.started || state.roundOrder.length === 0) return null;
+      const playerIdx = state.roundOrder[state.currentTurnIndex];
+      return state.players[playerIdx] || null;
+    }
+
+    function selectScore(val) {
+      if (!state.started) return;
+      state.turnBuilder.selectedBase = val;
+      updateTurnBuilderUI();
+    }
+
+    function lockDart() {
+      const player = getCurrentPlayer();
+      if (!player || state.turnBuilder.isStanding) return;
+
+      if (state.turnBuilder.darts.length >= 3) {
+        showNotice('Maximum 3 darts per turn.', 'error');
+        return;
+      }
+
+      const selected = state.turnBuilder.selectedBase;
+      if (selected === null) {
+        showNotice('Select a number or Miss first.', 'error');
+        return;
+      }
+
+      if (selected !== 'MISS') {
+        const numVal = parseInt(selected, 10);
+        if (state.roundLockedNumbers.has(numVal)) {
+          showNotice(`Number ${numVal} has already been hit this round and is locked!`, 'error');
+          return;
+        }
+      }
+
+      const dartObj = {
+        base: selected,
+        value: selected === 'MISS' ? 0 : parseInt(selected, 10)
+      };
+
+      state.turnBuilder.darts.push(dartObj);
+      state.turnBuilder.selectedBase = null;
+
+      const total = calculateTurnTotal(state.turnBuilder.darts);
+      if (total > 21) {
+        showNotice(`BUST! Total score ${total} exceeded 21. Turn auto-stood.`, 'bust-flash');
+        state.turnBuilder.isStanding = true;
+      }
+
+      updateTurnBuilderUI();
+      updateUI();
+    }
+
+    function standTurn() {
+      if (!state.started) return;
+      state.turnBuilder.isStanding = true;
+      showNotice('Standing with current darts.', 'info');
+      updateTurnBuilderUI();
+    }
+
+    function undoLastDart() {
+      if (!state.started || state.turnBuilder.darts.length === 0) return;
+      state.turnBuilder.darts.pop();
+      state.turnBuilder.isStanding = false;
+      showNotice('Last dart undone.', 'info');
+      updateTurnBuilderUI();
+      updateUI();
+    }
+
+    function resetTurnBuilder() {
+      state.turnBuilder = {
+        darts: [],
+        selectedBase: null,
+        isStanding: false
+      };
+      updateTurnBuilderUI();
+    }
+
+    function calculateTurnTotal(darts) {
+      return darts.reduce((sum, d) => sum + d.value, 0);
+    }
+
+    function submitTurn() {
+      const player = getCurrentPlayer();
+      if (!player) return;
+
+      const total = calculateTurnTotal(state.turnBuilder.darts);
+
+      player.currentDarts = [...state.turnBuilder.darts];
+      player.currentRoundScore = total > 21 ? 0 : total;
+      player.busted = total > 21;
+
+      // Add hit non-miss base numbers to round lock set
+      player.currentDarts.forEach(d => {
+        if (d.base !== 'MISS') {
+          state.roundLockedNumbers.add(parseInt(d.base, 10));
+        }
+      });
+
+      state.currentTurnIndex++;
+
+      if (state.currentTurnIndex >= state.roundOrder.length) {
+        evaluateRoundResults();
+        resetTurnBuilder();
         startRound();
-      }, 500);
+      } else {
+        resetTurnBuilder();
+        updateUI();
+      }
+    }
+
+    function evaluateRoundResults() {
+      const housePlayer = state.players.find(p => p.isHouse);
+      const houseScore = housePlayer.busted ? 0 : housePlayer.currentRoundScore;
+
+      let logText = `Round ${state.round} Complete: House (${housePlayer.name}) scored ${housePlayer.busted ? 'BUST (0)' : houseScore}. `;
+
+      state.players.forEach(p => {
+        if (p.isHouse) {
+          p.roundStatus = '-';
+          return;
+        }
+
+        if (p.busted) {
+          p.roundStatus = 'lose';
+          p.score += 0;
+        } else if (housePlayer.busted) {
+          p.roundStatus = 'win';
+          p.score += 3;
+        } else if (p.currentRoundScore > houseScore) {
+          p.roundStatus = 'win';
+          p.score += 3;
+        } else if (p.currentRoundScore === houseScore) {
+          p.roundStatus = 'tie';
+          p.score += 1;
+        } else {
+          p.roundStatus = 'lose';
+          p.score += 0;
+        }
+      });
+
+      state.logs.unshift(logText);
+      renderLogs();
+    }
+
+    function endGame() {
+      state.started = false;
+      els.topStatus.textContent = 'Game Complete';
+
+      const sorted = [...state.players].sort((a, b) => b.score - a.score);
+      els.finalList.innerHTML = '';
+
+      sorted.forEach((p, idx) => {
+        const row = document.createElement('div');
+        row.className = 'final-row';
+        row.innerHTML = `
+          <div>
+            <strong style="font-size:1.2rem; color:var(--ink);">${idx + 1}. ${escapeHtml(p.name)}</strong>
+          </div>
+          <div class="final-score">${p.score} pts</div>
+        `;
+        els.finalList.appendChild(row);
+      });
+
+      els.finalPanel.style.display = 'block';
+      showNotice(`Game finished! Winner: ${sorted[0].name} with ${sorted[0].score} points!`, 'success');
+
+      // Sync summary to Google Sheets
+      const summary = sorted.map(p => `${p.name}: ${p.score} pts`).join(', ');
+      syncGameToHellcastle('Blackjack Darts', summary);
     }
 
     function updateUI() {
-      document.getElementById('round-num').innerText = gameState.round;
+      const currentPlayer = getCurrentPlayer();
 
-      let currentPlayer = gameState.players[gameState.currentPlayerIndex];
-      if (currentPlayer) {
-        document.getElementById('current-player-name').innerText = currentPlayer.name;
-        document.getElementById('current-player-score').innerText = currentPlayer.score;
+      if (state.started && currentPlayer) {
+        els.topStatus.textContent = `Round ${state.round} / ${MAX_ROUNDS} · ${currentPlayer.name}'s Turn`;
+        els.roundDisplay.textContent = `Round ${state.round} / ${MAX_ROUNDS}`;
+        els.orderDisplay.textContent = `Turn ${state.currentTurnIndex + 1} of ${state.roundOrder.length}`;
+
+        els.currentPlayerLabel.textContent = currentPlayer.name;
+        els.currentRoleLabel.textContent = currentPlayer.isHouse ? 'House (Throws Last)' : 'Player';
+        els.currentRoundLabel.textContent = `${state.round} / ${MAX_ROUNDS}`;
       }
 
-      const grid = document.getElementById('players-grid');
-      grid.innerHTML = '';
+      renderScoreboard();
+      renderLockedNumbers();
+      updateTurnBuilderUI();
+    }
 
-      gameState.players.forEach((p, idx) => {
-        const isActive = idx === gameState.currentPlayerIndex;
-        let status = 'Playing';
-        if (p.busted) status = 'Busted';
-        else if (p.standing) status = 'Stood';
+    function updateTurnBuilderUI() {
+      const selected = state.turnBuilder.selectedBase;
+      els.previewBase.textContent = `Base: ${selected === null ? '—' : selected}`;
+      els.previewValue.textContent = `Value: ${selected === null ? '—' : (selected === 'MISS' ? 0 : selected)}`;
 
-        grid.innerHTML += `
-          <div class="player-card ${isActive ? 'active' : ''}">
-            <h4>${p.name} ${isActive ? '⚡' : ''}</h4>
-            <p>Hand Score: <strong>${p.score}</strong> (${status})</p>
-            <p>Total Game Points: <strong>${p.totalPoints}</strong></p>
-          </div>
+      const currentTotal = calculateTurnTotal(state.turnBuilder.darts);
+      els.runningTotalLabel.textContent = currentTotal;
+
+      const dartCount = state.turnBuilder.darts.length;
+      els.dartStageLabel.textContent = state.turnBuilder.isStanding ? 'Turn Finished (Standing)' : `Dart ${Math.min(dartCount + 1, 3)} of 3`;
+
+      els.dartHistory1.textContent = state.turnBuilder.darts[0] ? state.turnBuilder.darts[0].base : '—';
+      els.dartHistory2.textContent = state.turnBuilder.darts[1] ? state.turnBuilder.darts[1].base : '—';
+      els.dartHistory3.textContent = state.turnBuilder.darts[2] ? state.turnBuilder.darts[2].base : '—';
+
+      // Button active class management
+      const buttons = document.querySelectorAll('.score-btn');
+      buttons.forEach(btn => {
+        const text = btn.textContent;
+        const val = text === 'Miss' ? 'MISS' : parseInt(text, 10);
+        if (selected === val) {
+          btn.classList.add('selected');
+        } else {
+          btn.classList.remove('selected');
+        }
+      });
+
+      // Disable/enable action controls
+      const isLocked = state.turnBuilder.darts.length >= 3 || state.turnBuilder.isStanding;
+      els.lockDartBtn.disabled = isLocked || selected === null;
+      els.standBtn.disabled = state.turnBuilder.isStanding || dartCount === 0;
+      els.submitTurnBtn.disabled = !state.started || (dartCount === 0 && !state.turnBuilder.isStanding);
+    }
+
+    function renderScoreboard() {
+      els.scoreboardBody.innerHTML = '';
+
+      state.players.forEach(p => {
+        const tr = document.createElement('tr');
+
+        const isCurrent = state.started && getCurrentPlayer() && getCurrentPlayer().id === p.id;
+        if (isCurrent) {
+          tr.style.background = 'rgba(242,193,78,.06)';
+        }
+
+        const d1 = p.currentDarts[0] ? p.currentDarts[0].base : '—';
+        const d2 = p.currentDarts[1] ? p.currentDarts[1].base : '—';
+        const d3 = p.currentDarts[2] ? p.currentDarts[2].base : '—';
+
+        let resultBadge = '<span class="result-tag pending">Pending</span>';
+        if (p.roundStatus === 'win') resultBadge = '<span class="result-tag win">Win (+3)</span>';
+        if (p.roundStatus === 'tie') resultBadge = '<span class="result-tag tie">Tie (+1)</span>';
+        if (p.roundStatus === 'lose') resultBadge = '<span class="result-tag lose">Lose (+0)</span>';
+        if (p.isHouse) resultBadge = '<span class="result-tag pending">House</span>';
+
+        tr.innerHTML = `
+          <td>
+            <div class="player-cell">
+              <div class="avatar">${escapeHtml(p.name.charAt(0).toUpperCase())}</div>
+              <div>
+                ${escapeHtml(p.name)}
+                ${p.isHouse ? '<span class="house-badge">House</span>' : ''}
+              </div>
+            </div>
+          </td>
+          <td><span class="dart-pill ${d1 === 'BUST' ? 'bust' : ''}">${d1}</span></td>
+          <td><span class="dart-pill ${d2 === 'BUST' ? 'bust' : ''}">${d2}</span></td>
+          <td><span class="dart-pill ${d3 === 'BUST' ? 'bust' : ''}">${d3}</span></td>
+          <td class="round-score">${p.busted ? '<span style="color:var(--red);">BUST</span>' : p.currentRoundScore}</td>
+          <td class="overall">${p.score} pts</td>
+          <td>${resultBadge}</td>
         `;
+
+        els.scoreboardBody.appendChild(tr);
       });
     }
 
-    function resetGame() {
-      document.getElementById('setup-panel').style.display = 'block';
-      document.getElementById('game-panel').style.display = 'none';
-      document.getElementById('logs').innerHTML = '';
+    function renderLockedNumbers() {
+      els.numbersLock.innerHTML = '';
+      if (state.roundLockedNumbers.size === 0) {
+        els.numbersLock.innerHTML = '<span class="helper">No numbers locked yet this round.</span>';
+        return;
+      }
+
+      Array.from(state.roundLockedNumbers).sort((a, b) => a - b).forEach(num => {
+        const pill = document.createElement('div');
+        pill.className = 'lock-pill taken';
+        pill.textContent = `#${num} Locked`;
+        els.numbersLock.appendChild(pill);
+      });
     }
+
+    function renderLogs() {
+      els.logList.innerHTML = '';
+      state.logs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = log;
+        els.logList.appendChild(item);
+      });
+    }
+
+    function showNotice(msg, type = 'info') {
+      els.notice.textContent = msg;
+      els.notice.className = `notice ${type}`;
+    }
+
+    function initRevealAnimation() {
+      const reveals = document.querySelectorAll('.reveal');
+      reveals.forEach(el => el.classList.add('visible'));
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
