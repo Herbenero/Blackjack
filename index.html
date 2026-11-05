@@ -665,29 +665,42 @@
 
       let logText = `Round ${state.round} Complete: House (${housePlayer.name}) scored ${housePlayer.busted ? 'BUST (0)' : houseScore}. `;
 
-      state.players.forEach(p => {
+     state.players.forEach(p => {
         if (p.isHouse) {
-          p.roundStatus = '-';
-          return;
+            // House logic: Wins if it doesn't bust and has a higher/equal score than players, or if players bust.
+            // For simplicity, we can let the House accumulate points or set its round status.
+            return; 
         }
 
-        if (p.busted) {
-          p.roundStatus = 'lose';
-          p.score += 0;
-        } else if (housePlayer.busted) {
-          p.roundStatus = 'win';
-          p.score += 3;
+        if (housePlayer.busted) {
+            // House busted: All non-busting players win (+3)
+            if (p.busted) {
+                p.roundStatus = 'lose';
+                p.score += 0;
+            } else {
+                p.roundStatus = 'win';
+                p.score += 3;
+            }
+        } else if (p.busted) {
+            // Player busted, House wins round -> House gets 3 points
+            p.roundStatus = 'lose';
+            p.score += 0;
+            housePlayer.score += 3;
         } else if (p.currentRoundScore > houseScore) {
-          p.roundStatus = 'win';
-          p.score += 3;
+            // Player beats House
+            p.roundStatus = 'win';
+            p.score += 3;
         } else if (p.currentRoundScore === houseScore) {
-          p.roundStatus = 'tie';
-          p.score += 1;
+            // Tie
+            p.roundStatus = 'tie';
+            p.score += 1;
         } else {
-          p.roundStatus = 'lose';
-          p.score += 0;
+            // House beats Player -> House gets 3 points
+            p.roundStatus = 'lose';
+            p.score += 0;
+            housePlayer.score += 3;
         }
-      });
+    });
 
       state.logs.unshift(logText);
       renderLogs();
